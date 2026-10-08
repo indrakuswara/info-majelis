@@ -1,69 +1,130 @@
-import Image from "next/image";
+// Beranda publik (plan Task 11; spec §9.1): hero + keterangan cakupan,
+// bilah cari/filter (mengarah ke /acara), dan rimba acara gabungan
+// (event + kemunculan rutin) terurut kronologis dalam horizon 60 hari,
+// dikelompokkan Hari ini / Besok / Minggu ini / Nanti.
 
-export default function Home() {
+import Link from "next/link";
+import { connection } from "next/server";
+import { EventCard } from "../components/public/EventCard.tsx";
+import { FilterBar } from "../components/public/FilterBar.tsx";
+import { SITE_COVERAGE_NOTE } from "../lib/constants.ts";
+import { ensureSchema } from "../lib/db.ts";
+import { getDistrictSuggestions, getUpcomingFeed, type FeedItem } from "../lib/feed.ts";
+import { addDaysISODate, wibTodayISODate } from "../lib/format.ts";
+import { nowWibISO } from "../lib/utils.ts";
+
+export const instant = false;
+
+type GroupKey = "today" | "tomorrow" | "week" | "later";
+
+const GROUPS: { key: GroupKey; label: string }[] = [
+  { key: "today", label: "Hari Ini" },
+  { key: "tomorrow", label: "Besok" },
+  { key: "week", label: "Minggu Ini" },
+  { key: "later", label: "Nanti" },
+];
+
+function groupOf(date: string, today: string): GroupKey {
+  // Tanggal lampau di sini hanya untuk acara yang sedang berlangsung
+  // (mulai kemarin, belum selesai) — tampilkan di "Hari Ini".
+  if (date <= today) return "today";
+  if (date === addDaysISODate(today, 1)) return "tomorrow";
+  if (date <= addDaysISODate(today, 6)) return "week";
+  return "later";
+}
+
+export default async function HomePage() {
+  await connection();
+  await ensureSchema();
+
+  const nowISO = nowWibISO();
+  const today = wibTodayISODate();
+  const [feed, districts] = await Promise.all([
+    getUpcomingFeed(nowISO, { horizonDays: 60, capEvents: true }),
+    getDistrictSuggestions(),
+  ]);
+
+  const grouped = new Map<GroupKey, FeedItem[]>();
+  for (const item of feed) {
+    const key = groupOf(item.date, today);
+    const list = grouped.get(key) ?? [];
+    list.push(item);
+    grouped.set(key, list);
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <div className="flex flex-col gap-8">
+      <section className="rounded-2xl bg-emerald-800 px-5 py-8 text-white sm:px-8">
+        <h1 className="text-2xl font-bold sm:text-3xl">Info Majelis</h1>
+        <p className="mt-2 max-w-prose text-emerald-50">
+          Jadwal maulid, tabligh akbar, kajian, dan acara majelis untuk
+          jamaah — tanpa perlu akun, langsung cari dan datang.
+        </p>
+        <p className="mt-3 inline-block rounded-full bg-white/15 px-3 py-1 text-sm font-medium">
+          {SITE_COVERAGE_NOTE}
+        </p>
+      </section>
+
+      <FilterBar
+        action="/acara"
+        values={{ range: "all", category: "", city: "", district: "", q: "" }}
+        districts={districts}
+      />
+
+      {feed.length === 0 ? (
+        <section className="rounded-2xl border border-dashed border-neutral-300 bg-white px-5 py-10 text-center">
+          <h2 className="text-lg font-semibold text-neutral-900">
+            Belum ada jadwal terdekat
+          </h2>
+          <p className="mx-auto mt-2 max-w-prose text-sm text-neutral-600">
+            Belum ada acara terbit untuk 60 hari ke depan. Silakan kembali
+            lagi nanti — jadwal baru ditambahkan secara berkala.
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+        </section>
+      ) : (
+        GROUPS.map(({ key, label }) => {
+          const items = grouped.get(key);
+          if (!items || items.length === 0) return null;
+          return (
+            <section key={key} aria-label={label}>
+              <div className="mb-3 flex items-baseline justify-between gap-2">
+                <h2 className="text-lg font-bold text-neutral-900">{label}</h2>
+                <span className="text-sm text-neutral-500">
+                  {items.length} acara
+                </span>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {items.map((item) => (
+                  <EventCard key={item.key} item={item} todayIso={today} />
+                ))}
+              </div>
+            </section>
+          );
+        })
+      )}
+
+      <section className="grid gap-4 sm:grid-cols-2">
+        <Link
+          href="/jadwal"
+          className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm hover:border-emerald-600"
+        >
+          <h2 className="font-semibold text-neutral-900">Jadwal Rutin</h2>
+          <p className="mt-1 text-sm text-neutral-600">
+            Pengajian dan majelis yang berlangsung rutin setiap pekan atau
+            bulan.
+          </p>
+        </Link>
+        <Link
+          href="/majelis"
+          className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm hover:border-emerald-600"
+        >
+          <h2 className="font-semibold text-neutral-900">Direktori Majelis</h2>
+          <p className="mt-1 text-sm text-neutral-600">
+            Profil majelis beserta jadwal dan acara yang mereka
+            selenggarakan.
+          </p>
+        </Link>
+      </section>
     </div>
   );
 }
