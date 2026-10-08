@@ -18,7 +18,7 @@ export default function OfflinePage() {
       <p aria-hidden="true" className="text-5xl">
         📶
       </p>
-      <h1 className="mt-4 text-2xl font-bold text-emerald-900">
+      <h1 className="mt-4 text-2xl font-extrabold tracking-tight text-neutral-950">
         Anda sedang luring
       </h1>
       <p className="mt-3 text-neutral-700">
@@ -31,7 +31,7 @@ export default function OfflinePage() {
       </p>
       <Link
         href="/"
-        className="mt-6 inline-block rounded-lg bg-emerald-800 px-5 py-2.5 font-semibold text-white hover:bg-emerald-900"
+        className="mt-6 inline-block rounded-none bg-neutral-900 px-5 py-3 text-sm font-bold text-white hover:bg-neutral-700"
       >
         Coba Lagi
       </Link>

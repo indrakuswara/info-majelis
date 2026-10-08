@@ -1,6 +1,10 @@
 // Bilah filter publik (plan Task 11; spec §9.1): form GET murni —
 // seluruh state hidup di query string (searchParams), jadi tautan dapat
 // dibagikan & di-refresh dan halaman tetap berfungsi tanpa JavaScript.
+//
+// Gaya mengikuti arah Kalender Dinding (Task 14): formulir koran —
+// label kecil berhuruf kapital, isian bergaris bawah, pilihan rentang &
+// kategori sebagai label persegi tegas, tombol solid tinta.
 
 import { CATEGORIES, REGIONS } from "../../lib/constants.ts";
 import type { UpcomingRange } from "../../lib/feed.ts";
@@ -21,8 +25,11 @@ export const RANGE_OPTIONS: { value: UpcomingRange; label: string }[] = [
 ];
 
 const inputClass =
-  "w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900";
-const labelClass = "block text-xs font-semibold uppercase tracking-wide text-neutral-500";
+  "w-full rounded-none border-0 border-b border-neutral-400 bg-transparent px-0 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-900 focus:outline-none";
+const labelClass =
+  "block text-[11px] font-bold uppercase tracking-[0.12em] text-neutral-500";
+const chipClass =
+  "inline-block border border-neutral-400 px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-neutral-600 peer-checked:border-neutral-900 peer-checked:bg-neutral-900 peer-checked:font-bold peer-checked:text-white";
 
 export function FilterBar({
   action,
@@ -40,7 +47,7 @@ export function FilterBar({
 }) {
   const datalistId = `kecamatan-${action.replace(/\W/g, "") || "beranda"}`;
   return (
-    <div className="rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm">
+    <div className="border-b border-[#e3e0d5] border-t-[3px] border-t-neutral-900 py-4">
       <form method="get" action={action} className="flex flex-col gap-4">
         <div>
           <label htmlFor="filter-q" className={labelClass}>
@@ -58,7 +65,7 @@ export function FilterBar({
 
         <fieldset>
           <legend className={labelClass}>Rentang tanggal</legend>
-          <div className="mt-1.5 flex flex-wrap gap-1.5">
+          <div className="mt-2 flex flex-wrap gap-1.5">
             {RANGE_OPTIONS.map((opt) => (
               <label key={opt.value} className="cursor-pointer">
                 <input
@@ -68,9 +75,7 @@ export function FilterBar({
                   defaultChecked={values.range === opt.value}
                   className="peer sr-only"
                 />
-                <span className="inline-block rounded-full border border-neutral-300 px-3 py-1.5 text-sm text-neutral-700 peer-checked:border-emerald-700 peer-checked:bg-emerald-700 peer-checked:font-semibold peer-checked:text-white">
-                  {opt.label}
-                </span>
+                <span className={chipClass}>{opt.label}</span>
               </label>
             ))}
           </div>
@@ -78,7 +83,7 @@ export function FilterBar({
 
         <fieldset>
           <legend className={labelClass}>Kategori</legend>
-          <div className="mt-1.5 flex flex-wrap gap-1.5">
+          <div className="mt-2 flex flex-wrap gap-1.5">
             <label className="cursor-pointer">
               <input
                 type="radio"
@@ -87,9 +92,7 @@ export function FilterBar({
                 defaultChecked={values.category === ""}
                 className="peer sr-only"
               />
-              <span className="inline-block rounded-full border border-neutral-300 px-3 py-1.5 text-sm text-neutral-700 peer-checked:border-emerald-700 peer-checked:bg-emerald-700 peer-checked:font-semibold peer-checked:text-white">
-                Semua Kategori
-              </span>
+              <span className={chipClass}>Semua Kategori</span>
             </label>
             {CATEGORIES.map((c) => (
               <label key={c.value} className="cursor-pointer">
@@ -100,9 +103,7 @@ export function FilterBar({
                   defaultChecked={values.category === c.value}
                   className="peer sr-only"
                 />
-                <span className="inline-block rounded-full border border-neutral-300 px-3 py-1.5 text-sm text-neutral-700 peer-checked:border-emerald-700 peer-checked:bg-emerald-700 peer-checked:font-semibold peer-checked:text-white">
-                  {c.label}
-                </span>
+                <span className={chipClass}>{c.label}</span>
               </label>
             ))}
           </div>
@@ -151,13 +152,13 @@ export function FilterBar({
         <div className="flex items-center gap-2">
           <button
             type="submit"
-            className="rounded-full bg-emerald-700 px-5 py-2 text-sm font-semibold text-white hover:bg-emerald-800"
+            className="rounded-none bg-neutral-900 px-5 py-2 text-xs font-bold uppercase tracking-wider text-white hover:bg-neutral-700"
           >
             Terapkan
           </button>
           <a
             href={action}
-            className="rounded-full border border-neutral-300 px-5 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50"
+            className="rounded-none border border-neutral-900 px-5 py-2 text-xs font-bold uppercase tracking-wider text-neutral-900 hover:bg-neutral-100"
           >
             Atur Ulang
           </a>

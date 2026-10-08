@@ -51,9 +51,9 @@ interface RoutineListItem {
 
 const GROUP_ORDER = [1, 2, 3, 4, 5, 6, 0];
 const inputClass =
-  "w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900";
+  "w-full rounded-none border-0 border-b border-neutral-400 bg-transparent px-0 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-900 focus:outline-none";
 const labelClass =
-  "block text-xs font-semibold uppercase tracking-wide text-neutral-500";
+  "block text-[11px] font-bold uppercase tracking-[0.12em] text-neutral-500";
 
 function weekdayOfDate(date: string): number {
   const [y, m, d] = date.split("-").map(Number);
@@ -77,88 +77,92 @@ function RoutineCard({ item }: { item: RoutineListItem }) {
   const href = `/acara/${routine.slug}`;
 
   return (
-    <article className="flex flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
-      {routine.posterUrl ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={routine.posterUrl}
-          alt={`Poster ${routine.title}`}
-          className="aspect-[4/3] w-full object-cover"
-          loading="lazy"
-        />
-      ) : (
-        <div className={`flex aspect-[4/3] flex-col justify-between p-5 text-white ${styles.fallback}`}>
-          <div className="flex flex-wrap gap-1.5">
-            <span className="rounded-full bg-white/20 px-2.5 py-1 text-xs font-semibold">
-              Rutin
-            </span>
-            <span className="rounded-full bg-white/20 px-2.5 py-1 text-xs font-semibold">
-              {categoryLabel(routine.category)}
-            </span>
+    <article className="flex gap-4 py-4">
+      <div className="w-14 flex-none text-right">
+        {next ? (
+          <>
+            <div className="text-2xl font-extrabold leading-none tabular-nums text-neutral-900">
+              {String(Number(next.date.slice(8, 10)))}
+            </div>
+            <div className="mt-1 text-[11px] font-semibold uppercase tracking-wide text-neutral-500">
+              {formatTanggal(next.date).split(" ").slice(2).join(" ")}
+            </div>
+            <div className="mt-1 text-xs font-bold tabular-nums text-neutral-700">
+              {next.startTime}
+            </div>
+          </>
+        ) : (
+          <div className="text-2xl font-extrabold leading-none text-neutral-400">
+            –
           </div>
-          <div>
-            <p className="text-lg font-semibold">
-              {describePattern(routine.pattern, {
-                startTime: routine.startTime,
-              })}
-            </p>
-            <p className="mt-1 text-sm text-white/85">
-              {routine.district}, {routine.city}
-            </p>
-          </div>
-        </div>
-      )}
-      <div className="flex flex-1 flex-col gap-2 p-4">
-        <div className="flex flex-wrap gap-1.5">
-          <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${styles.chip}`}>
+        )}
+      </div>
+
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-bold uppercase tracking-[0.08em]">
+          <span className={`inline-flex items-center gap-1.5 ${styles.text}`}>
+            <span
+              aria-hidden="true"
+              className={`h-1.5 w-1.5 flex-none rounded-full ${styles.dot}`}
+            />
             {categoryLabel(routine.category)}
           </span>
-          <span className="rounded-full bg-neutral-800 px-2 py-0.5 text-xs font-semibold text-white">
+          <span className="border border-neutral-400 px-1 py-px text-neutral-600">
             Rutin
           </span>
           {next?.exceptionKind === "edisi-spesial" ? (
-            <span className="rounded-full bg-amber-400 px-2 py-0.5 text-xs font-semibold text-amber-950">
-              Berikutnya Edisi Spesial
-            </span>
+            <span className="text-amber-700">Berikutnya Edisi Spesial</span>
           ) : null}
         </div>
-        <h3 className="text-base font-semibold leading-snug text-neutral-900">
+        <h3 className="mt-1.5 text-base font-bold leading-snug text-neutral-900">
           <Link href={href} className="hover:underline">
             {routine.title}
           </Link>
         </h3>
-        <p className="text-sm font-medium text-neutral-800">
+        <p className="mt-1 text-sm font-medium text-neutral-800">
           {describePattern(routine.pattern, {
             startTime: routine.startTime,
           })}{" "}
           · {formatJamRange(routine.startTime, routine.endTime)}
         </p>
         {next ? (
-          <p className="text-sm text-neutral-700">
+          <p className="mt-1 text-sm text-neutral-600">
             Berikutnya: {formatTanggal(next.date)},{" "}
             {formatJamRange(next.startTime, routine.endTime)}
           </p>
         ) : (
-          <p className="text-sm font-medium text-amber-800">
+          <p className="mt-1 text-sm font-medium text-amber-800">
             Belum ada jadwal berikutnya yang terkonfirmasi
           </p>
         )}
-        <p className="text-sm text-neutral-700">
-          {(next?.venueName ?? routine.venueName)} — {routine.district},{" "}
-          {routine.city}
+        <p className="mt-1 text-sm text-neutral-700">
+          <span className="font-medium text-neutral-900">
+            {next?.venueName ?? routine.venueName}
+          </span>{" "}
+          — {routine.district}, {routine.city}
         </p>
         {item.organizerName ? (
-          <p className="text-sm text-neutral-500">
+          <p className="mt-1 text-sm text-neutral-500">
             Penyelenggara: {item.organizerName}
           </p>
         ) : null}
         <Link
           href={href}
-          className="mt-auto pt-2 text-sm font-semibold text-emerald-800 underline underline-offset-4"
+          className="mt-2 inline-block text-sm font-semibold text-emerald-800 underline underline-offset-4"
         >
           Lihat detail rutin
         </Link>
       </div>
+
+      {routine.posterUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={routine.posterUrl}
+          alt={`Poster ${routine.title}`}
+          className="h-28 w-20 flex-none self-start rounded-[2px] object-cover sm:h-32 sm:w-24"
+          loading="lazy"
+        />
+      ) : null}
     </article>
   );
 }
@@ -229,8 +233,10 @@ export default async function JadwalPage({
 
   return (
     <div className="flex flex-col gap-8">
-      <div>
-        <h1 className="text-2xl font-bold text-neutral-950">Jadwal Rutin</h1>
+      <div className="border-b-2 border-neutral-900 pb-4">
+        <h1 className="text-2xl font-extrabold tracking-tight text-neutral-950">
+          Jadwal Rutin
+        </h1>
         <p className="mt-1 max-w-prose text-sm leading-relaxed text-neutral-600">
           Semua jadwal rutin yang terbit dan aktif, dikelompokkan
           berdasarkan hari kemunculannya.
@@ -240,7 +246,7 @@ export default async function JadwalPage({
       <form
         method="get"
         action="/jadwal"
-        className="rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm"
+        className="border-b border-[#e3e0d5] border-t-[3px] border-t-neutral-900 py-4"
       >
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <div>
@@ -309,13 +315,13 @@ export default async function JadwalPage({
         <div className="mt-4 flex flex-wrap items-center gap-2">
           <button
             type="submit"
-            className="rounded-full bg-emerald-700 px-5 py-2 text-sm font-semibold text-white hover:bg-emerald-800"
+            className="rounded-none bg-neutral-900 px-5 py-2 text-xs font-bold uppercase tracking-wider text-white hover:bg-neutral-700"
           >
             Terapkan Filter
           </button>
           <a
             href="/jadwal"
-            className="rounded-full border border-neutral-300 px-5 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50"
+            className="rounded-none border border-neutral-900 px-5 py-2 text-xs font-bold uppercase tracking-wider text-neutral-900 hover:bg-neutral-100"
           >
             Atur Ulang
           </a>
@@ -326,8 +332,8 @@ export default async function JadwalPage({
       </form>
 
       {items.length === 0 ? (
-        <section className="rounded-2xl border border-dashed border-neutral-300 bg-white px-5 py-10 text-center">
-          <h2 className="text-lg font-semibold text-neutral-900">
+        <section className="border border-dashed border-neutral-400 px-5 py-10 text-center">
+          <h2 className="text-lg font-bold text-neutral-900">
             Tidak ada jadwal rutin yang cocok
           </h2>
           <p className="mx-auto mt-2 max-w-prose text-sm text-neutral-600">
@@ -343,15 +349,15 @@ export default async function JadwalPage({
             if (!group || group.length === 0) return null;
             return (
               <section key={day} aria-label={`Jadwal hari ${WEEKDAY_NAMES[day]}`}>
-                <div className="mb-3 flex items-baseline justify-between gap-2">
-                  <h2 className="text-lg font-bold text-neutral-950">
+                <div className="flex items-baseline justify-between gap-2 border-b-2 border-neutral-900 pb-1.5">
+                  <h2 className="text-sm font-extrabold uppercase tracking-[0.12em] text-neutral-950">
                     {WEEKDAY_NAMES[day]}
                   </h2>
                   <span className="text-sm text-neutral-500">
                     {group.length} jadwal
                   </span>
                 </div>
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="divide-y divide-[#e3e0d5]">
                   {group.map((item) => (
                     <RoutineCard key={item.routine.id} item={item} />
                   ))}
@@ -361,15 +367,15 @@ export default async function JadwalPage({
           })}
           {grouped.get(null)?.length ? (
             <section aria-label="Jadwal tanpa hari tetap">
-              <div className="mb-3 flex items-baseline justify-between gap-2">
-                <h2 className="text-lg font-bold text-neutral-950">
+              <div className="flex items-baseline justify-between gap-2 border-b-2 border-neutral-900 pb-1.5">
+                <h2 className="text-sm font-extrabold uppercase tracking-[0.12em] text-neutral-950">
                   Belum Ada Hari Kemunculan Berikutnya
                 </h2>
                 <span className="text-sm text-neutral-500">
                   {grouped.get(null)?.length} jadwal
                 </span>
               </div>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="divide-y divide-[#e3e0d5]">
                 {grouped.get(null)?.map((item) => (
                   <RoutineCard key={item.routine.id} item={item} />
                 ))}

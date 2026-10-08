@@ -82,7 +82,7 @@ export function ShareButtons({
         type="button"
         onClick={handleShare}
         aria-expanded={menuOpen}
-        className="inline-flex w-full items-center justify-center rounded-full border border-emerald-700 px-5 py-2.5 text-sm font-semibold text-emerald-800 hover:bg-emerald-50"
+        className="inline-flex w-full items-center justify-center rounded-none border-2 border-neutral-900 px-5 py-3 text-sm font-bold text-neutral-900 hover:bg-neutral-100"
       >
         Bagikan
       </button>
@@ -90,7 +90,7 @@ export function ShareButtons({
       {/* Menu selalu dirender (tersembunyi sampai dibuka) agar tautan
           WhatsApp ikut hadir pada HTML awal. */}
       <div
-        className={`absolute inset-x-0 top-full z-10 mt-2 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-lg ${
+        className={`absolute inset-x-0 top-full z-10 mt-2 overflow-hidden rounded-none border border-neutral-900 bg-[#fffef8] shadow-lg ${
           menuOpen ? "" : "hidden"
         }`}
       >
@@ -98,14 +98,14 @@ export function ShareButtons({
           href={`https://wa.me/?text=${encodeURIComponent(text)}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="block px-4 py-3 text-sm font-medium text-neutral-900 hover:bg-emerald-50"
+          className="block px-4 py-3 text-sm font-medium text-neutral-900 hover:bg-neutral-100"
         >
           Bagikan via WhatsApp
         </a>
         <button
           type="button"
           onClick={handleCopy}
-          className="block w-full px-4 py-3 text-left text-sm font-medium text-neutral-900 hover:bg-emerald-50"
+          className="block w-full px-4 py-3 text-left text-sm font-medium text-neutral-900 hover:bg-neutral-100"
         >
           Salin Tautan
         </button>
@@ -114,7 +114,7 @@ export function ShareButtons({
       {feedback ? (
         <p
           role="status"
-          className="absolute inset-x-0 top-full z-10 mt-2 rounded-full bg-neutral-900 px-4 py-2 text-center text-sm font-medium text-white shadow-lg"
+          className="absolute inset-x-0 top-full z-10 mt-2 rounded-none bg-neutral-900 px-4 py-2 text-center text-sm font-medium text-white shadow-lg"
         >
           {feedback}
         </p>

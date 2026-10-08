@@ -6,6 +6,11 @@
 // publik. Ia tidak menerima record mentah dan tidak pernah menerima
 // sourceInfo, sehingga field internal admin tidak dapat bocor lewat
 // komponen ini.
+//
+// Gaya mengikuti arah Kalender Dinding (Task 14): kepala ala agenda
+// (kolom tanggal besar tabular + garis tinta), label kategori teks
+// kecil beraksen warna hemat, seksi-seksi dibatasi garis tipis, dan
+// tombol aksi tegas — Rute solid tinta, Bagikan outline.
 
 import Link from "next/link";
 import { CATEGORY_STYLES, categoryLabel } from "../../lib/constants.ts";
@@ -90,12 +95,31 @@ export interface EventDetailData {
   upcomingExceptions?: EventDetailException[];
 }
 
-const STATUS_CLASSES: Record<EventDetailData["statusTone"], string> = {
-  upcoming: "bg-emerald-600 text-white",
-  ongoing: "bg-red-600 text-white",
-  finished: "bg-neutral-700 text-white",
-  routine: "bg-neutral-800 text-white",
-};
+const SECTION_HEADING =
+  "border-b border-neutral-900 pb-1 text-sm font-extrabold uppercase tracking-[0.1em] text-neutral-950";
+const DT_CLASS =
+  "text-[11px] font-bold uppercase tracking-[0.12em] text-neutral-500";
+
+function StatusLabel({
+  tone,
+  children,
+}: {
+  tone: EventDetailData["statusTone"];
+  children: string;
+}) {
+  if (tone === "ongoing") {
+    return (
+      <span className="bg-red-700 px-1.5 py-0.5 font-bold text-white">
+        {children}
+      </span>
+    );
+  }
+  return (
+    <span className={tone === "finished" ? "text-neutral-500" : "text-neutral-900"}>
+      {children}
+    </span>
+  );
+}
 
 function fallbackDay(date: string | null): string {
   if (!date) return "–";
@@ -140,7 +164,7 @@ export function EventDetail({ data }: { data: EventDetailData }) {
     : null;
 
   return (
-    <article className="overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
+    <article>
       {jsonLd ? (
         <script
           type="application/ld+json"
@@ -152,78 +176,92 @@ export function EventDetail({ data }: { data: EventDetailData }) {
         <img
           src={data.posterUrl}
           alt={`Poster ${data.title}`}
-          className="max-h-[32rem] w-full object-cover"
+          className="max-h-[32rem] w-full rounded-[2px] object-cover"
         />
-      ) : (
-        <div className={`p-6 text-white sm:p-8 ${styles.fallback}`}>
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <div className="text-6xl font-bold leading-none">
+      ) : null}
+
+      <div className="flex flex-col gap-6 pt-5">
+        {data.posterUrl ? (
+          <div className="border-b-2 border-neutral-900 pb-4">
+            <h1 className="text-3xl font-extrabold leading-tight tracking-tight text-neutral-950">
+              {data.title}
+            </h1>
+            {data.organizer ? (
+              <p className="mt-2 font-medium text-neutral-700">
+                {data.organizer.name}
+              </p>
+            ) : null}
+            <p className="mt-1 text-sm text-neutral-500">
+              {data.district}, {data.city}
+            </p>
+          </div>
+        ) : (
+          <div className="flex gap-5 border-b-2 border-neutral-900 pb-4">
+            <div className="w-20 flex-none text-right">
+              <div className="text-6xl font-extrabold leading-none tabular-nums text-neutral-950">
                 {fallbackDay(data.fallbackDate)}
               </div>
-              <div className="mt-2 text-lg font-medium">
+              <div className="mt-1.5 text-xs font-semibold uppercase tracking-wide text-neutral-500">
                 {fallbackMonthYear(data.fallbackDate)}
               </div>
             </div>
-            {data.organizer?.logoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={data.organizer.logoUrl}
-                alt=""
-                className="h-14 w-14 rounded-full bg-white/90 object-cover"
-              />
-            ) : null}
+            <div className="min-w-0 flex-1">
+              <div className="flex items-start justify-between gap-4">
+                <h1 className="text-3xl font-extrabold leading-tight tracking-tight text-neutral-950">
+                  {data.title}
+                </h1>
+                {data.organizer?.logoUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={data.organizer.logoUrl}
+                    alt=""
+                    className="h-12 w-12 flex-none rounded-[2px] object-cover"
+                  />
+                ) : null}
+              </div>
+              {data.organizer ? (
+                <p className="mt-2 font-medium text-neutral-700">
+                  {data.organizer.name}
+                </p>
+              ) : null}
+              <p className="mt-1 text-sm text-neutral-500">
+                {data.district}, {data.city}
+              </p>
+            </div>
           </div>
-          <h1 className="mt-6 text-3xl font-bold leading-tight">
-            {data.title}
-          </h1>
-          {data.organizer ? (
-            <p className="mt-2 text-white/90">{data.organizer.name}</p>
-          ) : null}
-          <p className="mt-1 text-sm text-white/85">
-            {data.district}, {data.city}
-          </p>
-        </div>
-      )}
+        )}
 
-      <div className="flex flex-col gap-6 p-5 sm:p-7">
-        {data.posterUrl ? (
-          <h1 className="text-3xl font-bold leading-tight text-neutral-950">
-            {data.title}
-          </h1>
-        ) : null}
-
-        <div className="flex flex-wrap items-center gap-1.5">
-          <span
-            className={`rounded-full px-2.5 py-1 text-xs font-semibold ${styles.chip}`}
-          >
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-bold uppercase tracking-[0.08em]">
+          <span className={`inline-flex items-center gap-1.5 ${styles.text}`}>
+            <span
+              aria-hidden="true"
+              className={`h-1.5 w-1.5 flex-none rounded-full ${styles.dot}`}
+            />
             {categoryLabel(data.category)}
           </span>
           {data.patternLabel ? (
-            <span className="rounded-full bg-neutral-800 px-2.5 py-1 text-xs font-semibold text-white">
+            <span className="border border-neutral-400 px-1 py-px text-neutral-600">
               Rutin
             </span>
           ) : null}
           {data.exceptionKind === "edisi-spesial" ? (
-            <span className="rounded-full bg-amber-400 px-2.5 py-1 text-xs font-semibold text-amber-950">
-              Edisi Spesial
-            </span>
+            <span className="text-amber-700">Edisi Spesial</span>
           ) : null}
-          <span
-            className={`rounded-full px-2.5 py-1 text-xs font-semibold ${STATUS_CLASSES[data.statusTone]}`}
-          >
-            {data.statusLabel}
-          </span>
+          <StatusLabel tone={data.statusTone}>{data.statusLabel}</StatusLabel>
           {data.relativeLabel ? (
-            <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-900">
-              {data.relativeLabel}
-            </span>
+            data.relativeLabel === "Hari ini" ? (
+              <span className="bg-red-700 px-1.5 py-0.5 text-white">
+                {data.relativeLabel}
+              </span>
+            ) : (
+              <span className="text-neutral-500">{data.relativeLabel}</span>
+            )
           ) : null}
         </div>
 
         {data.exceptionKind === "edisi-spesial" ? (
-          <section className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-amber-950">
-            <h2 className="font-semibold">Edisi Spesial</h2>
+          <section className="border-l-4 border-amber-500 bg-amber-50 px-4 py-3 text-amber-950">
+            <h2 className="font-bold">Edisi Spesial</h2>
             <p className="mt-1 text-sm">
               {data.exceptionNote ??
                 "Kemunculan ini memakai keterangan khusus dari penyelenggara."}
@@ -231,37 +269,29 @@ export function EventDetail({ data }: { data: EventDetailData }) {
           </section>
         ) : null}
 
-        <dl className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <dt className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-              Tanggal
-            </dt>
+        <dl className="grid gap-x-6 sm:grid-cols-2">
+          <div className="border-t border-[#e3e0d5] py-3">
+            <dt className={DT_CLASS}>Tanggal</dt>
             <dd className="mt-1 font-medium text-neutral-900">
               {data.dateLabel}
             </dd>
           </div>
-          <div>
-            <dt className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-              Waktu
-            </dt>
-            <dd className="mt-1 font-medium text-neutral-900">
+          <div className="border-t border-[#e3e0d5] py-3">
+            <dt className={DT_CLASS}>Waktu</dt>
+            <dd className="mt-1 font-medium tabular-nums text-neutral-900">
               {data.timeLabel}
             </dd>
           </div>
           {data.patternLabel ? (
-            <div>
-              <dt className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-                Pola Jadwal
-              </dt>
+            <div className="border-t border-[#e3e0d5] py-3">
+              <dt className={DT_CLASS}>Pola Jadwal</dt>
               <dd className="mt-1 font-medium text-neutral-900">
                 {data.patternLabel}
               </dd>
             </div>
           ) : null}
-          <div>
-            <dt className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-              Tempat
-            </dt>
+          <div className="border-t border-[#e3e0d5] py-3">
+            <dt className={DT_CLASS}>Tempat</dt>
             <dd className="mt-1 text-neutral-900">
               <span className="font-medium">{data.venueName}</span>
               <span className="mt-0.5 block text-sm text-neutral-600">
@@ -270,10 +300,8 @@ export function EventDetail({ data }: { data: EventDetailData }) {
             </dd>
           </div>
           {data.organizer ? (
-            <div>
-              <dt className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-                Penyelenggara
-              </dt>
+            <div className="border-t border-[#e3e0d5] py-3">
+              <dt className={DT_CLASS}>Penyelenggara</dt>
               <dd className="mt-1 font-medium text-neutral-900">
                 {data.organizer.href ? (
                   <Link
@@ -289,20 +317,16 @@ export function EventDetail({ data }: { data: EventDetailData }) {
             </div>
           ) : null}
           {data.speakers.length > 0 ? (
-            <div>
-              <dt className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-                Penceramah
-              </dt>
+            <div className="border-t border-[#e3e0d5] py-3">
+              <dt className={DT_CLASS}>Penceramah</dt>
               <dd className="mt-1 font-medium text-neutral-900">
                 {data.speakers.join(", ")}
               </dd>
             </div>
           ) : null}
           {data.audienceLabel ? (
-            <div>
-              <dt className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-                Untuk Siapa
-              </dt>
+            <div className="border-t border-[#e3e0d5] py-3">
+              <dt className={DT_CLASS}>Untuk Siapa</dt>
               <dd className="mt-1 font-medium text-neutral-900">
                 {data.audienceLabel}
               </dd>
@@ -317,7 +341,7 @@ export function EventDetail({ data }: { data: EventDetailData }) {
 
         {data.description ? (
           <section>
-            <h2 className="text-lg font-semibold text-neutral-950">
+            <h2 className={SECTION_HEADING}>
               {data.descriptionLabel ?? "Deskripsi"}
             </h2>
             <p className="mt-2 whitespace-pre-line leading-relaxed text-neutral-700">
@@ -328,9 +352,7 @@ export function EventDetail({ data }: { data: EventDetailData }) {
 
         {data.extraInfo ? (
           <section>
-            <h2 className="text-lg font-semibold text-neutral-950">
-              Info Tambahan
-            </h2>
+            <h2 className={SECTION_HEADING}>Info Tambahan</h2>
             <p className="mt-2 whitespace-pre-line leading-relaxed text-neutral-700">
               {data.extraInfo}
             </p>
@@ -338,8 +360,8 @@ export function EventDetail({ data }: { data: EventDetailData }) {
         ) : null}
 
         {data.specialNote ? (
-          <section className="rounded-xl bg-neutral-50 px-4 py-3">
-            <h2 className="font-semibold text-neutral-950">Catatan Khusus</h2>
+          <section className="border-l-4 border-neutral-900 bg-neutral-50 px-4 py-3">
+            <h2 className="font-bold text-neutral-950">Catatan Khusus</h2>
             <p className="mt-1 whitespace-pre-line text-sm leading-relaxed text-neutral-700">
               {data.specialNote}
             </p>
@@ -352,7 +374,7 @@ export function EventDetail({ data }: { data: EventDetailData }) {
 
         {data.liveStreamUrl || data.libraryUrl ? (
           <section>
-            <h2 className="text-lg font-semibold text-neutral-950">Tautan</h2>
+            <h2 className={SECTION_HEADING}>Tautan</h2>
             <ul className="mt-2 space-y-2 text-sm">
               {data.liveStreamUrl ? (
                 <li>
@@ -383,8 +405,8 @@ export function EventDetail({ data }: { data: EventDetailData }) {
         ) : null}
 
         {data.contact ? (
-          <section className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
-            <h2 className="font-semibold text-emerald-950">Kontak Panitia</h2>
+          <section className="border-l-4 border-emerald-700 bg-emerald-50 px-4 py-3">
+            <h2 className="font-bold text-emerald-950">Kontak Panitia</h2>
             <p className="mt-1 whitespace-pre-line text-emerald-950">
               {data.contact}
             </p>
@@ -397,46 +419,41 @@ export function EventDetail({ data }: { data: EventDetailData }) {
 
         {data.occurrences && data.occurrences.length > 0 ? (
           <section>
-            <h2 className="text-lg font-semibold text-neutral-950">
-              Kemunculan Berikutnya
-            </h2>
-            <ol className="mt-3 space-y-3">
+            <h2 className={SECTION_HEADING}>Kemunculan Berikutnya</h2>
+            <ol className="divide-y divide-[#e3e0d5]">
               {data.occurrences.map((occurrence) => (
-                <li
-                  key={occurrence.date}
-                  className="rounded-xl border border-neutral-200 px-4 py-3"
-                >
-                  <div className="flex flex-wrap items-center gap-2">
+                <li key={occurrence.date} className="py-3">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                     {occurrence.href &&
                     occurrence.exceptionKind !== "libur" ? (
                       <Link
                         href={occurrence.href}
-                        className="font-semibold text-emerald-800 underline underline-offset-4"
+                        className="font-bold text-neutral-900 underline underline-offset-4"
                       >
                         {formatTanggal(occurrence.date)}
                       </Link>
                     ) : (
-                      <span className="font-semibold text-neutral-900">
+                      <span className="font-bold text-neutral-900">
                         {formatTanggal(occurrence.date)}
                       </span>
                     )}
                     {occurrence.exceptionKind === "libur" ? (
-                      <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-900">
+                      <span className="bg-red-700 px-1.5 py-0.5 text-[11px] font-bold uppercase tracking-[0.08em] text-white">
                         Libur
                       </span>
                     ) : null}
                     {occurrence.exceptionKind === "edisi-spesial" ? (
-                      <span className="rounded-full bg-amber-400 px-2 py-0.5 text-xs font-semibold text-amber-950">
+                      <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-amber-700">
                         Edisi Spesial
                       </span>
                     ) : null}
                     {occurrence.isOngoing ? (
-                      <span className="rounded-full bg-red-600 px-2 py-0.5 text-xs font-semibold text-white">
+                      <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-red-700">
                         Sedang Berlangsung
                       </span>
                     ) : null}
                   </div>
-                  <p className="mt-1 text-sm text-neutral-700">
+                  <p className="mt-1 text-sm tabular-nums text-neutral-700">
                     {occurrence.startTime} WIB
                     {occurrence.endTime
                       ? ` – ${occurrence.endTime} WIB`
@@ -464,16 +481,11 @@ export function EventDetail({ data }: { data: EventDetailData }) {
 
         {data.upcomingExceptions && data.upcomingExceptions.length > 0 ? (
           <section>
-            <h2 className="text-lg font-semibold text-neutral-950">
-              Pengecualian Mendatang
-            </h2>
-            <ul className="mt-3 space-y-3">
+            <h2 className={SECTION_HEADING}>Pengecualian Mendatang</h2>
+            <ul className="divide-y divide-[#e3e0d5]">
               {data.upcomingExceptions.map((exception) => (
-                <li
-                  key={exception.date}
-                  className="rounded-xl border border-neutral-200 px-4 py-3"
-                >
-                  <p className="font-medium text-neutral-900">
+                <li key={exception.date} className="py-3">
+                  <p className="font-bold text-neutral-900">
                     {formatTanggal(exception.date)} —{" "}
                     {exception.kind === "libur" ? "Libur" : "Edisi Spesial"}
                   </p>
@@ -493,7 +505,7 @@ export function EventDetail({ data }: { data: EventDetailData }) {
           </section>
         ) : null}
 
-        <p className="border-t border-neutral-200 pt-4 text-sm text-neutral-500">
+        <p className="border-t-2 border-neutral-900 pt-4 text-sm text-neutral-500">
           Terakhir diperbarui: {formatTanggal(data.updatedAt)}
         </p>
       </div>

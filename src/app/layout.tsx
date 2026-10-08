@@ -55,8 +55,9 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  // Emerald gelap palet situs (spec §12) — selaras theme_color manifest.
-  themeColor: "#064e3b",
+  // Tinta nameplate arah Kalender Dinding (Task 14) — selaras
+  // theme_color manifest.
+  themeColor: "#1a1a1a",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

@@ -20,24 +20,27 @@ export const CATEGORIES: { value: Category; label: string; colorToken: string }[
 ];
 
 /**
- * Kelas warna tetap per kategori (spec §11) — satu-satunya tempat pemetaan
- * warna kategori untuk UI publik: latar blok fallback kartu & chip label.
+ * Aksen warna tetap per kategori (spec §11) — satu-satunya tempat
+ * pemetaan warna kategori untuk UI publik. Sejak polish arah Kalender
+ * Dinding (Task 14), warna kategori TIDAK lagi dipakai sebagai blok
+ * latar besar: ia tampil hemat sebagai warna teks label kategori kecil
+ * berhuruf kapital dan titik penanda di sisinya.
  * Nilai adalah nama kelas Tailwind literal agar terdeteksi pemindai kelas.
- * `fallback` = latar blok tanpa poster (teks putih di atasnya);
- * `chip` = label kategori kecil di kartu.
+ * `text` = warna teks label kategori (cukup gelap untuk terbaca di atas
+ * kertas putih hangat); `dot` = warna titik kecil pendamping label.
  */
 export const CATEGORY_STYLES: Record<
   Category,
-  { fallback: string; chip: string }
+  { text: string; dot: string }
 > = {
-  maulid: { fallback: "bg-emerald-700", chip: "bg-emerald-100 text-emerald-900" },
-  "tabligh-akbar": { fallback: "bg-blue-950", chip: "bg-blue-100 text-blue-950" },
-  kajian: { fallback: "bg-teal-600", chip: "bg-teal-100 text-teal-900" },
-  haul: { fallback: "bg-amber-800", chip: "bg-amber-100 text-amber-900" },
-  istighosah: { fallback: "bg-purple-700", chip: "bg-purple-100 text-purple-900" },
-  phbi: { fallback: "bg-red-900", chip: "bg-red-100 text-red-900" },
-  ziarah: { fallback: "bg-[#68785a]", chip: "bg-[#e6ebdf] text-[#3f4a36]" },
-  lainnya: { fallback: "bg-neutral-600", chip: "bg-neutral-200 text-neutral-800" },
+  maulid: { text: "text-emerald-800", dot: "bg-emerald-700" },
+  "tabligh-akbar": { text: "text-blue-900", dot: "bg-blue-950" },
+  kajian: { text: "text-teal-800", dot: "bg-teal-600" },
+  haul: { text: "text-amber-800", dot: "bg-amber-700" },
+  istighosah: { text: "text-purple-800", dot: "bg-purple-700" },
+  phbi: { text: "text-red-900", dot: "bg-red-900" },
+  ziarah: { text: "text-[#3f4a36]", dot: "bg-[#68785a]" },
+  lainnya: { text: "text-neutral-600", dot: "bg-neutral-500" },
 };
 
 /** Label kategori dari nilai kategorinya; "Lainnya" bila tak dikenal. */

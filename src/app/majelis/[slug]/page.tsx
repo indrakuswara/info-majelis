@@ -88,6 +88,11 @@ function SocialLink({ label, href }: { label: string; href: string | null }) {
   );
 }
 
+const SECTION_HEADING =
+  "border-b border-neutral-900 pb-1 text-sm font-extrabold uppercase tracking-[0.1em] text-neutral-950";
+const DT_CLASS =
+  "text-[11px] font-bold uppercase tracking-[0.12em] text-neutral-500";
+
 export default async function MajelisProfilePage({
   params,
 }: {
@@ -143,27 +148,27 @@ export default async function MajelisProfilePage({
         ← Direktori majelis
       </Link>
 
-      <article className="overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
+      <article>
         {headerImage ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={headerImage}
             alt={`Foto atau logo ${majelis.name}`}
-            className="max-h-80 w-full object-cover"
+            className="max-h-80 w-full rounded-[2px] object-cover"
           />
         ) : null}
-        <div className="flex flex-col gap-5 p-5 sm:p-7">
-          <div className="flex items-start gap-4">
+        <div className="flex flex-col gap-5 pt-5">
+          <div className="flex items-start gap-4 border-b-2 border-neutral-900 pb-4">
             {majelis.logoUrl && majelis.photoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={majelis.logoUrl}
                 alt=""
-                className="h-16 w-16 shrink-0 rounded-2xl object-cover"
+                className="h-16 w-16 shrink-0 rounded-[2px] object-cover"
               />
             ) : null}
             <div>
-              <h1 className="text-3xl font-bold leading-tight text-neutral-950">
+              <h1 className="text-3xl font-extrabold leading-tight tracking-tight text-neutral-950">
                 {majelis.name}
               </h1>
               <p className="mt-1 text-neutral-600">
@@ -184,12 +189,10 @@ export default async function MajelisProfilePage({
             </p>
           ) : null}
 
-          <dl className="grid gap-4 sm:grid-cols-2">
+          <dl className="grid gap-x-6 sm:grid-cols-2">
             {majelis.baseAddress ? (
-              <div>
-                <dt className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-                  Alamat Markas
-                </dt>
+              <div className="border-t border-[#e3e0d5] py-3">
+                <dt className={DT_CLASS}>Alamat Markas</dt>
                 <dd className="mt-1 text-neutral-900">
                   {majelis.baseAddress}
                   {majelis.baseDistrict || majelis.city ? (
@@ -202,10 +205,8 @@ export default async function MajelisProfilePage({
               </div>
             ) : null}
             {majelis.contact ? (
-              <div>
-                <dt className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-                  Kontak
-                </dt>
+              <div className="border-t border-[#e3e0d5] py-3">
+                <dt className={DT_CLASS}>Kontak</dt>
                 <dd className="mt-1 whitespace-pre-line text-neutral-900">
                   {majelis.contact}
                 </dd>
@@ -222,7 +223,7 @@ export default async function MajelisProfilePage({
                 href={majelis.baseMapsUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex rounded-full bg-emerald-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-emerald-800"
+                className="inline-flex rounded-none bg-neutral-900 px-5 py-3 text-sm font-bold text-white hover:bg-neutral-700"
               >
                 Rute ke Markas
               </a>
@@ -234,9 +235,7 @@ export default async function MajelisProfilePage({
           majelis.tiktokUrl ||
           majelis.websiteUrl ? (
             <section>
-              <h2 className="text-lg font-semibold text-neutral-950">
-                Media Sosial & Situs
-              </h2>
+              <h2 className={SECTION_HEADING}>Media Sosial & Situs</h2>
               <ul className="mt-2 space-y-1.5 text-sm">
                 <SocialLink label="Instagram" href={majelis.instagramUrl} />
                 <SocialLink label="YouTube" href={majelis.youtubeUrl} />
@@ -246,15 +245,15 @@ export default async function MajelisProfilePage({
             </section>
           ) : null}
 
-          <p className="border-t border-neutral-200 pt-4 text-sm text-neutral-500">
+          <p className="border-t-2 border-neutral-900 pt-4 text-sm text-neutral-500">
             Terakhir diperbarui: {formatTanggal(majelis.updatedAt)}
           </p>
         </div>
       </article>
 
       <section>
-        <div className="mb-3 flex items-baseline justify-between gap-2">
-          <h2 className="text-xl font-bold text-neutral-950">
+        <div className="flex items-baseline justify-between gap-2 border-b-2 border-neutral-900 pb-1.5">
+          <h2 className="text-sm font-extrabold uppercase tracking-[0.12em] text-neutral-950">
             Acara Akan Datang
           </h2>
           <span className="text-sm text-neutral-500">
@@ -262,11 +261,11 @@ export default async function MajelisProfilePage({
           </span>
         </div>
         {upcomingItems.length === 0 ? (
-          <p className="rounded-2xl border border-dashed border-neutral-300 bg-white px-5 py-8 text-center text-sm text-neutral-600">
+          <p className="border border-dashed border-neutral-400 px-5 py-8 text-center text-sm text-neutral-600">
             Belum ada acara mendatang dari majelis ini.
           </p>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="divide-y divide-[#e3e0d5]">
             {upcomingItems.map((item) => (
               <EventCard key={item.key} item={item} todayIso={today} />
             ))}
@@ -275,21 +274,18 @@ export default async function MajelisProfilePage({
       </section>
 
       <section>
-        <h2 className="mb-3 text-xl font-bold text-neutral-950">
+        <h2 className="border-b-2 border-neutral-900 pb-1.5 text-sm font-extrabold uppercase tracking-[0.12em] text-neutral-950">
           Jadwal Rutin Majelis Ini
         </h2>
         {routinesWithNext.length === 0 ? (
-          <p className="rounded-2xl border border-dashed border-neutral-300 bg-white px-5 py-8 text-center text-sm text-neutral-600">
+          <p className="border border-dashed border-neutral-400 px-5 py-8 text-center text-sm text-neutral-600">
             Majelis ini belum memiliki jadwal rutin terbit yang aktif.
           </p>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="divide-y divide-[#e3e0d5]">
             {routinesWithNext.map(({ routine, next }) => (
-              <article
-                key={routine.id}
-                className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm"
-              >
-                <h3 className="font-semibold leading-snug text-neutral-950">
+              <article key={routine.id} className="py-4">
+                <h3 className="font-bold leading-snug text-neutral-950">
                   <Link
                     href={`/acara/${routine.slug}`}
                     className="hover:underline"
@@ -297,7 +293,7 @@ export default async function MajelisProfilePage({
                     {routine.title}
                   </Link>
                 </h3>
-                <p className="mt-1 text-sm text-neutral-700">
+                <p className="mt-1 text-sm tabular-nums text-neutral-700">
                   {describePattern(routine.pattern, {
                     startTime: routine.startTime,
                   })}{" "}

@@ -35,56 +35,54 @@ function MajelisCard({
   const imageUrl = majelis.logoUrl ?? majelis.photoUrl;
   const href = `/majelis/${majelis.slug}`;
   return (
-    <article className="flex flex-col rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm">
-      <div className="flex items-start gap-4">
-        {imageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={imageUrl}
-            alt={`Logo atau foto ${majelis.name}`}
-            className="h-16 w-16 shrink-0 rounded-2xl object-cover"
-            loading="lazy"
-          />
-        ) : (
-          <div
-            aria-hidden="true"
-            className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-emerald-700 text-2xl font-bold text-white"
-          >
-            {majelis.name.trim().charAt(0).toUpperCase() || "M"}
-          </div>
-        )}
-        <div className="min-w-0">
-          <h2 className="text-lg font-semibold leading-snug text-neutral-950">
-            <Link href={href} className="hover:underline">
-              {majelis.name}
-            </Link>
-          </h2>
-          {majelis.leader ? (
-            <p className="mt-0.5 text-sm text-neutral-600">
-              Pimpinan: {majelis.leader}
-            </p>
-          ) : null}
-          <p className="mt-0.5 text-sm text-neutral-600">
-            {majelis.baseDistrict ? `${majelis.baseDistrict}, ` : ""}
-            {majelis.city}
-          </p>
-        </div>
-      </div>
-      {majelis.description ? (
-        <p className="mt-4 line-clamp-3 text-sm leading-relaxed text-neutral-700">
-          {majelis.description}
-        </p>
-      ) : null}
-      <div className="mt-auto flex items-center justify-between gap-3 pt-5">
-        <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-900">
-          {upcomingCount} acara akan datang
-        </span>
-        <Link
-          href={href}
-          className="text-sm font-semibold text-emerald-800 underline underline-offset-4"
+    <article className="flex gap-4 py-5">
+      {imageUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={imageUrl}
+          alt={`Logo atau foto ${majelis.name}`}
+          className="h-16 w-16 shrink-0 rounded-[2px] object-cover"
+          loading="lazy"
+        />
+      ) : (
+        <div
+          aria-hidden="true"
+          className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[2px] bg-neutral-900 text-2xl font-extrabold text-white"
         >
-          Lihat profil
-        </Link>
+          {majelis.name.trim().charAt(0).toUpperCase() || "M"}
+        </div>
+      )}
+      <div className="min-w-0 flex-1">
+        <h2 className="text-lg font-bold leading-snug text-neutral-950">
+          <Link href={href} className="hover:underline">
+            {majelis.name}
+          </Link>
+        </h2>
+        {majelis.leader ? (
+          <p className="mt-0.5 text-sm text-neutral-600">
+            Pimpinan: {majelis.leader}
+          </p>
+        ) : null}
+        <p className="mt-0.5 text-sm text-neutral-600">
+          {majelis.baseDistrict ? `${majelis.baseDistrict}, ` : ""}
+          {majelis.city}
+        </p>
+        {majelis.description ? (
+          <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-neutral-700">
+            {majelis.description}
+          </p>
+        ) : null}
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+          <span className="text-xs font-bold uppercase tracking-[0.08em] text-neutral-700">
+            {upcomingCount} acara akan datang
+          </span>
+          <Link
+            href={href}
+            className="text-sm font-semibold text-emerald-800 underline underline-offset-4"
+          >
+            Lihat profil
+          </Link>
+        </div>
       </div>
     </article>
   );
@@ -130,8 +128,8 @@ export default async function MajelisDirectoryPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-2xl font-bold text-neutral-950">
+      <div className="border-b-2 border-neutral-900 pb-4">
+        <h1 className="text-2xl font-extrabold tracking-tight text-neutral-950">
           Direktori Majelis
         </h1>
         <p className="mt-1 max-w-prose text-sm leading-relaxed text-neutral-600">
@@ -143,20 +141,20 @@ export default async function MajelisDirectoryPage({
       <form
         method="get"
         action="/majelis"
-        className="rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm"
+        className="border-b border-[#e3e0d5] border-t-[3px] border-t-neutral-900 py-4"
       >
         <label
           htmlFor="majelis-city"
-          className="block text-xs font-semibold uppercase tracking-wide text-neutral-500"
+          className="block text-[11px] font-bold uppercase tracking-[0.12em] text-neutral-500"
         >
           Kota/Kabupaten
         </label>
-        <div className="mt-1.5 flex flex-wrap gap-2">
+        <div className="mt-1 flex flex-wrap items-end gap-2">
           <select
             id="majelis-city"
             name="city"
             defaultValue={city}
-            className="min-w-56 flex-1 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900"
+            className="min-w-56 flex-1 rounded-none border-0 border-b border-neutral-400 bg-transparent px-0 py-2 text-sm text-neutral-900 focus:border-neutral-900 focus:outline-none"
           >
             <option value="">Semua kota/kabupaten</option>
             {REGIONS.map((region) => (
@@ -167,13 +165,13 @@ export default async function MajelisDirectoryPage({
           </select>
           <button
             type="submit"
-            className="rounded-full bg-emerald-700 px-5 py-2 text-sm font-semibold text-white hover:bg-emerald-800"
+            className="rounded-none bg-neutral-900 px-5 py-2 text-xs font-bold uppercase tracking-wider text-white hover:bg-neutral-700"
           >
             Terapkan
           </button>
           <Link
             href="/majelis"
-            className="rounded-full border border-neutral-300 px-5 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50"
+            className="rounded-none border border-neutral-900 px-5 py-2 text-xs font-bold uppercase tracking-wider text-neutral-900 hover:bg-neutral-100"
           >
             Atur Ulang
           </Link>
@@ -184,8 +182,8 @@ export default async function MajelisDirectoryPage({
       </form>
 
       {majelisList.length === 0 ? (
-        <section className="rounded-2xl border border-dashed border-neutral-300 bg-white px-5 py-10 text-center">
-          <h2 className="text-lg font-semibold text-neutral-900">
+        <section className="border border-dashed border-neutral-400 px-5 py-10 text-center">
+          <h2 className="text-lg font-bold text-neutral-900">
             Belum ada majelis yang cocok
           </h2>
           <p className="mx-auto mt-2 max-w-prose text-sm text-neutral-600">
@@ -193,7 +191,7 @@ export default async function MajelisDirectoryPage({
           </p>
         </section>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="divide-y divide-[#e3e0d5]">
           {majelisList.map((majelis) => (
             <MajelisCard
               key={majelis.id}

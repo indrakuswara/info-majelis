@@ -54,13 +54,15 @@ export default async function HomePage() {
 
   return (
     <div className="flex flex-col gap-8">
-      <section className="rounded-2xl bg-emerald-800 px-5 py-8 text-white sm:px-8">
-        <h1 className="text-2xl font-bold sm:text-3xl">Info Majelis</h1>
-        <p className="mt-2 max-w-prose text-emerald-50">
+      <section className="border-b-2 border-neutral-900 pb-5">
+        <h1 className="text-3xl font-extrabold tracking-tight text-neutral-900">
+          Info Majelis
+        </h1>
+        <p className="mt-2 max-w-prose text-neutral-600">
           Jadwal maulid, tabligh akbar, kajian, dan acara majelis untuk
           jamaah — tanpa perlu akun, langsung cari dan datang.
         </p>
-        <p className="mt-3 inline-block rounded-full bg-white/15 px-3 py-1 text-sm font-medium">
+        <p className="mt-3 border-l-2 border-red-700 pl-3 text-sm font-semibold text-neutral-800">
           {SITE_COVERAGE_NOTE}
         </p>
       </section>
@@ -72,8 +74,8 @@ export default async function HomePage() {
       />
 
       {feed.length === 0 ? (
-        <section className="rounded-2xl border border-dashed border-neutral-300 bg-white px-5 py-10 text-center">
-          <h2 className="text-lg font-semibold text-neutral-900">
+        <section className="border border-dashed border-neutral-400 px-5 py-10 text-center">
+          <h2 className="text-lg font-bold text-neutral-900">
             Belum ada jadwal terdekat
           </h2>
           <p className="mx-auto mt-2 max-w-prose text-sm text-neutral-600">
@@ -87,13 +89,15 @@ export default async function HomePage() {
           if (!items || items.length === 0) return null;
           return (
             <section key={key} aria-label={label}>
-              <div className="mb-3 flex items-baseline justify-between gap-2">
-                <h2 className="text-lg font-bold text-neutral-900">{label}</h2>
+              <div className="flex items-center justify-between gap-2 border-b-2 border-neutral-900 pb-1.5">
+                <h2 className="text-sm font-extrabold uppercase tracking-[0.12em] text-neutral-900">
+                  {label}
+                </h2>
                 <span className="text-sm text-neutral-500">
                   {items.length} acara
                 </span>
               </div>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="divide-y divide-[#e3e0d5]">
                 {items.map((item) => (
                   <EventCard key={item.key} item={item} todayIso={today} />
                 ))}
@@ -106,9 +110,9 @@ export default async function HomePage() {
       <section className="grid gap-4 sm:grid-cols-2">
         <Link
           href="/jadwal"
-          className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm hover:border-emerald-600"
+          className="border-2 border-neutral-900 p-5 hover:bg-neutral-100"
         >
-          <h2 className="font-semibold text-neutral-900">Jadwal Rutin</h2>
+          <h2 className="font-bold text-neutral-900">Jadwal Rutin</h2>
           <p className="mt-1 text-sm text-neutral-600">
             Pengajian dan majelis yang berlangsung rutin setiap pekan atau
             bulan.
@@ -116,9 +120,9 @@ export default async function HomePage() {
         </Link>
         <Link
           href="/majelis"
-          className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm hover:border-emerald-600"
+          className="border-2 border-neutral-900 p-5 hover:bg-neutral-100"
         >
-          <h2 className="font-semibold text-neutral-900">Direktori Majelis</h2>
+          <h2 className="font-bold text-neutral-900">Direktori Majelis</h2>
           <p className="mt-1 text-sm text-neutral-600">
             Profil majelis beserta jadwal dan acara yang mereka
             selenggarakan.
