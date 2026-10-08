@@ -4,6 +4,7 @@
 // dari sisi server, Task 16).
 
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import { authenticateAdmin, createSession, ensureAdminFromEnv } from "../../../lib/auth.ts";
 import { ensureSchema } from "../../../lib/db.ts";
 
@@ -48,6 +49,11 @@ export default async function LoginPage({
 }: {
   searchParams: Promise<{ error?: string; next?: string }>;
 }) {
+  // Prerender berhenti di sini: skema + seed admin (yang memanggil
+  // randomBytes untuk hashing) hanya boleh jalan saat request beneran,
+  // bukan saat build — tanpa ini build Vercel gagal di halaman ini
+  // karena DB build masih kosong sehingga jalur seed terpicu.
+  await connection();
   await ensureSchema();
   await ensureAdminFromEnv();
 
