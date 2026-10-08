@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import { mkdir, readFile, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { del, put } from "@vercel/blob";
@@ -47,15 +48,20 @@ function sanitizeOwnerId(ownerId: string): string {
 }
 
 /**
- * Kunci berkas gambar: deterministik, datar satu segmen
- * (`<kind>-<ownerId tersanitasi>.webp`) agar cocok dengan route
+ * Kunci berkas gambar: datar satu segmen
+ * (`<kind>-<ownerId tersanitasi>-<acak>.webp`) agar cocok dengan route
  * `/uploads/[key]` dan aman dari path traversal apa pun isi ownerId-nya.
+ * Akhiran acak per unggahan disengaja: URL berubah setiap kali gambar
+ * diganti, sehingga cache browser/CDN tidak pernah menyajikan gambar
+ * lama pada URL yang sama (Blob memasang max-age 30 hari — bug
+ * production 2026-10-08: poster terganti di server tapi yang tampil
+ * dari cache tetap gambar lama).
  */
 export function organizerImageKey(
   kind: "poster" | "logo" | "photo",
   ownerId: string,
 ): string {
-  return `${kind}-${sanitizeOwnerId(ownerId)}.webp`;
+  return `${kind}-${sanitizeOwnerId(ownerId)}-${randomBytes(6).toString("hex")}.webp`;
 }
 
 /** Kunci unggahan sah: satu segmen, tanpa `..`, tanpa pemisah path. */

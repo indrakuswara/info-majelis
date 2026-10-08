@@ -76,18 +76,19 @@ assert.equal(validateImageInput({ contentType: "image/webp", sizeBytes: 1 * MB }
 }
 
 // --- organizerImageKey -----------------------------------------------------------
-// Deterministik, datar (satu segmen path), dan aman dari ownerId berbahaya.
-assert.equal(organizerImageKey("poster", "abc123"), "poster-abc123.webp");
-assert.equal(organizerImageKey("logo", "Majelis Nurul"), "logo-majelis-nurul.webp");
-assert.equal(organizerImageKey("poster", "abc123"), organizerImageKey("poster", "abc123"));
+// Unik per panggilan (URL berubah setiap gambar diganti → tidak ada cache
+// basi di browser/CDN), datar (satu segmen path), aman dari ownerId jahat.
+assert.match(organizerImageKey("poster", "abc123"), /^poster-abc123-[0-9a-f]{12}\.webp$/);
+assert.match(organizerImageKey("logo", "Majelis Nurul"), /^logo-majelis-nurul-[0-9a-f]{12}\.webp$/);
+assert.notEqual(organizerImageKey("poster", "abc123"), organizerImageKey("poster", "abc123"));
 {
   const evil = organizerImageKey("photo", "../../etc/passwd");
-  assert.equal(evil, "photo-etc-passwd.webp");
+  assert.match(evil, /^photo-etc-passwd-[0-9a-f]{12}\.webp$/);
   assert.ok(!evil.includes(".."), "key tidak boleh mengandung ..");
   assert.ok(!evil.includes("/"), "key harus satu segmen datar");
   assert.ok(isSafeUploadKey(evil));
 }
-assert.equal(organizerImageKey("poster", ""), "poster-tanpa-id.webp");
+assert.match(organizerImageKey("poster", ""), /^poster-tanpa-id-[0-9a-f]{12}\.webp$/);
 
 // --- isSafeUploadKey (dipakai route handler) -------------------------------------
 assert.equal(isSafeUploadKey("poster-abc123.webp"), true);
