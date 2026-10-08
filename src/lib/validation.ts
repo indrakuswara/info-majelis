@@ -3,6 +3,7 @@
 // field apa saja yang kurang, dengan label Bahasa Indonesia dan nama field
 // yang persis nama field form (plan Task 3).
 
+import { CATEGORIES, REGIONS } from "./constants.ts";
 import type {
   EventRecord,
   MajelisRecord,
@@ -15,6 +16,16 @@ export type MissingField = { field: string; label: string };
 
 function isBlank(value: string | null | undefined): boolean {
   return value == null || value.trim() === "";
+}
+
+/** Kategori harus anggota enum terkunci (constants CATEGORIES, spec §6.1). */
+function isValidCategory(value: unknown): boolean {
+  return CATEGORIES.some((c) => c.value === value);
+}
+
+/** Wilayah harus anggota daftar terkunci (constants REGIONS, spec §6.1). */
+function isKnownRegion(value: unknown): boolean {
+  return typeof value === "string" && REGIONS.includes(value);
 }
 
 function isValidWeekday(value: unknown): value is Weekday {
@@ -76,7 +87,7 @@ function validateScheduleCommon(
 ): MissingField[] {
   const missing: MissingField[] = [];
   if (isBlank(s.title)) missing.push({ field: "title", label: "Judul" });
-  if (s.category == null)
+  if (!isValidCategory(s.category))
     missing.push({ field: "category", label: "Kategori" });
   if (dateOrPattern) missing.push(dateOrPattern);
   if (isBlank(s.startTime))
@@ -85,7 +96,7 @@ function validateScheduleCommon(
     missing.push({ field: "venueName", label: "Nama tempat" });
   if (isBlank(s.address))
     missing.push({ field: "address", label: "Alamat lengkap" });
-  if (isBlank(s.city))
+  if (!isKnownRegion(s.city))
     missing.push({ field: "city", label: "Kota/Kabupaten" });
   if (isBlank(s.district))
     missing.push({ field: "district", label: "Kecamatan" });
@@ -122,7 +133,7 @@ export function validateMajelisForPublish(
 ): MissingField[] {
   const missing: MissingField[] = [];
   if (isBlank(m.name)) missing.push({ field: "name", label: "Nama majelis" });
-  if (isBlank(m.city))
+  if (!isKnownRegion(m.city))
     missing.push({ field: "majelisCity", label: "Kota/Kabupaten basis" });
   return missing;
 }

@@ -53,6 +53,30 @@ assert.deepEqual(validateEventForPublish(eventLengkap), []);
   ]);
 }
 
+// --- Event: category kosong/spasi/di luar enum ⇒ tepat category kurang --------
+// Regresi review Task 3: category tidak boleh cuma dicek == null — string
+// kosong, spasi, dan nilai di luar 8 kategori CATEGORIES harus ditolak.
+for (const category of ["", "  ", "konser"]) {
+  const tidakValid: Partial<EventRecord> = {
+    ...eventLengkap,
+    category: category as EventRecord["category"],
+  };
+  assert.deepEqual(validateEventForPublish(tidakValid), [
+    { field: "category", label: "Kategori" },
+  ]);
+}
+
+// --- Event: city di luar REGIONS ⇒ tepat city kurang ---------------------------
+{
+  const kotaFiktif: Partial<EventRecord> = {
+    ...eventLengkap,
+    city: "Kota Fiktif",
+  };
+  assert.deepEqual(validateEventForPublish(kotaFiktif), [
+    { field: "city", label: "Kota/Kabupaten" },
+  ]);
+}
+
 // --- Event: objek kosong ⇒ kedelapan field wajib, urut §6.2 ------------------
 assert.deepEqual(fields(validateEventForPublish({})), [
   "title",
@@ -77,6 +101,29 @@ const rutinLengkap: Partial<RoutineRecord> = {
   district: "Bekasi Timur",
 };
 assert.deepEqual(validateRoutineForPublish(rutinLengkap), []);
+
+// --- Rutin: category kosong/spasi/di luar enum ⇒ tepat category kurang --------
+// Jalur yang sama dengan event lewat validateScheduleCommon — harus ikut ketat.
+for (const category of ["", "  ", "konser"]) {
+  const tidakValid: Partial<RoutineRecord> = {
+    ...rutinLengkap,
+    category: category as RoutineRecord["category"],
+  };
+  assert.deepEqual(validateRoutineForPublish(tidakValid), [
+    { field: "category", label: "Kategori" },
+  ]);
+}
+
+// --- Rutin: city di luar REGIONS ⇒ tepat city kurang ---------------------------
+{
+  const kotaFiktif: Partial<RoutineRecord> = {
+    ...rutinLengkap,
+    city: "Kota Fiktif",
+  };
+  assert.deepEqual(validateRoutineForPublish(kotaFiktif), [
+    { field: "city", label: "Kota/Kabupaten" },
+  ]);
+}
 
 // --- Rutin: monthly-date tanpa dayOfMonth ⇒ pattern kurang ---------------------
 {
@@ -168,6 +215,15 @@ for (const dayOfMonth of [0, 32]) {
 
   const namaSpasi: Partial<MajelisRecord> = { name: "  ", city: "Kota Bekasi" };
   assert.deepEqual(fields(validateMajelisForPublish(namaSpasi)), ["name"]);
+
+  // City sampah / di luar REGIONS ⇒ majelisCity kurang (bukan sekadar non-blank).
+  const kotaSampah: Partial<MajelisRecord> = {
+    name: "Majelis Contoh",
+    city: "Kota Fiktif",
+  };
+  assert.deepEqual(validateMajelisForPublish(kotaSampah), [
+    { field: "majelisCity", label: "Kota/Kabupaten basis" },
+  ]);
 }
 
 console.log("test-validation: OK");
