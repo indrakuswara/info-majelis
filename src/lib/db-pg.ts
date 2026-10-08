@@ -35,6 +35,7 @@ import {
   validateScheduleDates,
   wibNowTs,
   type AdminListFilter,
+  type AdminRecord,
   type ArchiveFilter,
   type EventInput,
   type MajelisInput,
@@ -991,6 +992,50 @@ export async function listRoutineExceptions(
     [routineId],
   );
   return rows.map(toException);
+}
+
+// ---------------------------------------------------------------------------
+// Admin
+// ---------------------------------------------------------------------------
+
+function toAdmin(r: Row): AdminRecord {
+  return {
+    id: str(r.id),
+    email: str(r.email),
+    passwordHash: str(r.password_hash),
+    createdAt: str(r.created_at),
+  };
+}
+
+export async function getAdminByEmail(
+  email: string,
+): Promise<AdminRecord | null> {
+  const row = await queryOne("SELECT * FROM admins WHERE email = $1", [
+    email.trim().toLowerCase(),
+  ]);
+  return row ? toAdmin(row) : null;
+}
+
+export async function createAdmin(input: {
+  email: string;
+  passwordHash: string;
+}): Promise<AdminRecord> {
+  const record: AdminRecord = {
+    id: randomUUID(),
+    email: input.email.trim().toLowerCase(),
+    passwordHash: input.passwordHash,
+    createdAt: nowISODateTime(),
+  };
+  await query(
+    "INSERT INTO admins (id, email, password_hash, created_at) VALUES ($1, $2, $3, $4)",
+    [record.id, record.email, record.passwordHash, record.createdAt],
+  );
+  return record;
+}
+
+export async function countAdmins(): Promise<number> {
+  const row = await queryOne("SELECT COUNT(*) AS n FROM admins");
+  return Number(row?.n ?? 0);
 }
 
 // ---------------------------------------------------------------------------

@@ -104,6 +104,14 @@ export interface PromoteResult {
   linkedRoutines: number;
 }
 
+/** Baris tabel `admins` (plan Task 5). Email selalu tersimpan ternormalisasi. */
+export interface AdminRecord {
+  id: string;
+  email: string;
+  passwordHash: string;
+  createdAt: string;
+}
+
 // ---------------------------------------------------------------------------
 // Validasi tanggal/waktu (internal — input rusak selalu Error)
 // ---------------------------------------------------------------------------
@@ -1343,6 +1351,48 @@ function listKnownDistrictsSqlite(city: string): string[] {
   );
 }
 
+// --- Admin (SQLite) ----------------------------------------------------------
+
+function toAdmin(r: Row): AdminRecord {
+  return {
+    id: str(r.id),
+    email: str(r.email),
+    passwordHash: str(r.password_hash),
+    createdAt: str(r.created_at),
+  };
+}
+
+function getAdminByEmailSqlite(email: string): AdminRecord | null {
+  const db = getSqlite();
+  const row = db
+    .prepare("SELECT * FROM admins WHERE email = ?")
+    .get(email.trim().toLowerCase()) as Row | undefined;
+  return row ? toAdmin(row) : null;
+}
+
+function createAdminSqlite(input: {
+  email: string;
+  passwordHash: string;
+}): AdminRecord {
+  const db = getSqlite();
+  const record: AdminRecord = {
+    id: randomUUID(),
+    email: input.email.trim().toLowerCase(),
+    passwordHash: input.passwordHash,
+    createdAt: nowISODateTime(),
+  };
+  db.prepare(
+    "INSERT INTO admins (id, email, password_hash, created_at) VALUES (?, ?, ?, ?)",
+  ).run(record.id, record.email, record.passwordHash, record.createdAt);
+  return record;
+}
+
+function countAdminsSqlite(): number {
+  const db = getSqlite();
+  const row = db.prepare("SELECT COUNT(*) AS n FROM admins").get() as Row;
+  return Number(row.n ?? 0);
+}
+
 // ---------------------------------------------------------------------------
 // Facade — memilih backend dari DATABASE_URL
 // ---------------------------------------------------------------------------
@@ -1564,4 +1614,24 @@ export async function listRoutineExceptions(
 export async function listKnownDistricts(city: string): Promise<string[]> {
   if (isPgBackend()) return pg.listKnownDistricts(city);
   return listKnownDistrictsSqlite(city);
+}
+
+export async function getAdminByEmail(
+  email: string,
+): Promise<AdminRecord | null> {
+  if (isPgBackend()) return pg.getAdminByEmail(email);
+  return getAdminByEmailSqlite(email);
+}
+
+export async function createAdmin(input: {
+  email: string;
+  passwordHash: string;
+}): Promise<AdminRecord> {
+  if (isPgBackend()) return pg.createAdmin(input);
+  return createAdminSqlite(input);
+}
+
+export async function countAdmins(): Promise<number> {
+  if (isPgBackend()) return pg.countAdmins();
+  return countAdminsSqlite();
 }
