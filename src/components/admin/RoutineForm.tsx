@@ -1078,7 +1078,7 @@ export function RoutineForm({
         )}
         {status === "published" && slug && (
           <Link
-            href={`/rutin/${slug}`}
+            href={`/acara/${slug}`}
             className="text-sm font-medium text-emerald-800 underline"
           >
             Lihat Halaman Publik

@@ -82,7 +82,7 @@ export default async function AdminEventPreviewPage({
       {event.status === "published" && (
         <p className="mt-4 text-sm">
           <Link
-            href={`/event/${event.slug}`}
+            href={`/acara/${event.slug}`}
             className="font-medium text-emerald-800 underline"
           >
             Lihat Halaman Publik

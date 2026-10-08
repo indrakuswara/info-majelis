@@ -3,6 +3,7 @@
 // lewat query string (form GET FilterBar — tanpa JavaScript tetap
 // berfungsi). Hanya konten terbit dari fungsi repository publik.
 
+import Link from "next/link";
 import { connection } from "next/server";
 import { EventCard } from "../../components/public/EventCard.tsx";
 import {
@@ -104,12 +105,12 @@ export default async function AcaraPage({
               : "Belum ada acara terbit yang akan datang. Silakan kembali lagi nanti — jadwal baru ditambahkan secara berkala."}
           </p>
           {hasFilter(values) ? (
-            <a
+            <Link
               href="/acara"
               className="mt-4 inline-block rounded-full bg-emerald-700 px-5 py-2 text-sm font-semibold text-white hover:bg-emerald-800"
             >
               Atur Ulang Filter
-            </a>
+            </Link>
           ) : null}
         </section>
       ) : (

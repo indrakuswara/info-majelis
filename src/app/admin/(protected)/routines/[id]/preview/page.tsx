@@ -115,7 +115,7 @@ export default async function AdminRoutinePreviewPage({
       {routine.status === "published" && routine.isActive && (
         <p className="mt-4 text-sm">
           <Link
-            href={`/rutin/${routine.slug}`}
+            href={`/acara/${routine.slug}`}
             className="font-medium text-emerald-800 underline"
           >
             Lihat Halaman Publik

@@ -727,7 +727,7 @@ export function EventForm({
         )}
         {status === "published" && slug && (
           <Link
-            href={`/event/${slug}`}
+            href={`/acara/${slug}`}
             className="text-sm font-medium text-emerald-800 underline"
           >
             Lihat Halaman Publik

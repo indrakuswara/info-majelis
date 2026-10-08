@@ -94,7 +94,7 @@ function isoWallTs(iso: string): number {
   return wallTs(iso.slice(0, 10), iso.slice(11, 16));
 }
 
-function resolveOrganizer(
+export function resolveOrganizer(
   record: { organizerMajelisId: string | null; organizerNameManual: string | null },
   majelisById: Map<string, MajelisRecord>,
 ): { name: string | null; logoUrl: string | null } {
@@ -127,7 +127,7 @@ function routineMatchesQuery(
   return haystack.includes(q.toLowerCase());
 }
 
-function eventToFeedItem(
+export function eventToFeedItem(
   e: EventRecord,
   majelisById: Map<string, MajelisRecord>,
   nowTs: number,
@@ -136,7 +136,7 @@ function eventToFeedItem(
   return {
     kind: "event",
     key: `event-${e.id}`,
-    href: `/event/${e.slug}`,
+    href: `/acara/${e.slug}`,
     title: e.title,
     category: e.category,
     date: e.startDate,
@@ -157,7 +157,7 @@ function eventToFeedItem(
   };
 }
 
-function occurrenceToFeedItem(
+export function occurrenceToFeedItem(
   r: RoutineRecord,
   o: Occurrence,
   majelisById: Map<string, MajelisRecord>,
@@ -167,7 +167,7 @@ function occurrenceToFeedItem(
   return {
     kind: "occurrence",
     key: `rutin-${r.id}-${o.date}`,
-    href: `/rutin/${r.slug}`,
+    href: `/acara/${r.slug}?tanggal=${o.date}`,
     title: r.title,
     category: r.category,
     date: o.date,
