@@ -92,6 +92,11 @@ export async function putImage(
       access: "public",
       contentType: "image/webp",
       addRandomSuffix: false,
+      // Kunci deterministik memang dirancang untuk ditimpa (paritas
+      // driver lokal yang menimpa berkas lama): tanpa ini, unggah ke
+      // kunci yang sudah ada di Blob ditolak SDK ("blob already
+      // exists") — ganti gambar & unggah-ulang setelah hapus gagal.
+      allowOverwrite: true,
       token: process.env.BLOB_READ_WRITE_TOKEN,
     });
     return { url: blob.url };
