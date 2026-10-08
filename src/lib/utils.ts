@@ -1,5 +1,17 @@
 // Utilitas format umum (murni, tanpa I/O) — dipakai UI admin & publik.
 
+/**
+ * Tanggal penanda untuk draft Event yang tanggal mulainya belum diisi.
+ * Repository (Task 4) mewajibkan tanggal valid pada setiap record,
+ * sementara spec §6.6 mengizinkan draft disimpan setengah jadi — server
+ * action Event menyimpan tanggal ini sebagai penanda "belum terisi",
+ * dan gerbang publish di server memetakannya kembali sebagai field
+ * kurang. Tanggal ini tidak pernah lolos ke publik: record penanda
+ * selalu berstatus draft, dan daftar admin menampilkannya sebagai
+ * "Tanggal belum diisi".
+ */
+export const EVENT_DRAFT_PLACEHOLDER_DATE = "9999-12-31";
+
 const MINUTE_MS = 60_000;
 const HOUR_MS = 60 * MINUTE_MS;
 const DAY_MS = 24 * HOUR_MS;
