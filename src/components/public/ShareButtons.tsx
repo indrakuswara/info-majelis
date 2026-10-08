@@ -1,16 +1,124 @@
-// Tombol Bagikan (spec §10). Menu Web Share API/WhatsApp/salin tautan
-// final dikerjakan di Task 13; di Task 12 tempat finalnya dirender
-// sebagai tautan bagikan WhatsApp dengan teks dari buildShareText.
+"use client";
 
-export function ShareButtons({ text }: { text: string }) {
+// Tombol Bagikan (spec §10) — salah satu dari HANYA dua tombol aksi di
+// halaman detail (tidak ada tombol kalender dalam bentuk apa pun).
+// Jalur utama: Web Share API bila perangkat mendukung. Fallback: menu
+// WhatsApp (teks siap kirim dari buildShareText) & Salin Tautan dengan
+// umpan balik "Tautan disalin".
+
+import { useEffect, useRef, useState } from "react";
+
+export function ShareButtons({
+  title,
+  text,
+  url,
+}: {
+  title: string;
+  /** Teks siap kirim format spec §10 (sudah memuat URL detail). */
+  text: string;
+  /** URL kanonis halaman ini untuk Salin Tautan. */
+  url: string;
+}) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [feedback, setFeedback] = useState<string | null>(null);
+  const feedbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (feedbackTimer.current) clearTimeout(feedbackTimer.current);
+    };
+  }, []);
+
+  function showFeedback(message: string) {
+    setFeedback(message);
+    if (feedbackTimer.current) clearTimeout(feedbackTimer.current);
+    feedbackTimer.current = setTimeout(() => setFeedback(null), 3000);
+  }
+
+  async function handleShare() {
+    if (typeof navigator !== "undefined" && "share" in navigator) {
+      try {
+        // Teks spec §10 sudah memuat URL ("Detail: ..."), jadi url tidak
+        // dikirim terpisah agar tautan tidak muncul dua kali di target.
+        await navigator.share({ title, text });
+        return;
+      } catch (error) {
+        // Batal oleh pengguna ⇒ jangan paksa tampilkan menu fallback.
+        if (error instanceof Error && error.name === "AbortError") return;
+      }
+    }
+    setMenuOpen((open) => !open);
+  }
+
+  async function handleCopy() {
+    setMenuOpen(false);
+    try {
+      await navigator.clipboard.writeText(url);
+      showFeedback("Tautan disalin");
+      return;
+    } catch {
+      // Clipboard API tidak tersedia/ditolak — coba cara lama.
+    }
+    try {
+      const textarea = document.createElement("textarea");
+      textarea.value = url;
+      textarea.style.position = "fixed";
+      textarea.style.opacity = "0";
+      document.body.appendChild(textarea);
+      textarea.select();
+      const ok = document.execCommand("copy");
+      document.body.removeChild(textarea);
+      showFeedback(
+        ok ? "Tautan disalin" : "Tidak dapat menyalin tautan otomatis",
+      );
+    } catch {
+      showFeedback("Tidak dapat menyalin tautan otomatis");
+    }
+  }
+
   return (
-    <a
-      href={`https://wa.me/?text=${encodeURIComponent(text)}`}
-      target="_blank"
-      rel="noreferrer"
-      className="inline-flex flex-1 items-center justify-center rounded-full border border-emerald-700 px-5 py-2.5 text-sm font-semibold text-emerald-800 hover:bg-emerald-50"
-    >
-      Bagikan
-    </a>
+    <div className="relative flex-1">
+      <button
+        type="button"
+        onClick={handleShare}
+        aria-expanded={menuOpen}
+        className="inline-flex w-full items-center justify-center rounded-full border border-emerald-700 px-5 py-2.5 text-sm font-semibold text-emerald-800 hover:bg-emerald-50"
+      >
+        Bagikan
+      </button>
+
+      {/* Menu selalu dirender (tersembunyi sampai dibuka) agar tautan
+          WhatsApp ikut hadir pada HTML awal. */}
+      <div
+        className={`absolute inset-x-0 top-full z-10 mt-2 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-lg ${
+          menuOpen ? "" : "hidden"
+        }`}
+      >
+        <a
+          href={`https://wa.me/?text=${encodeURIComponent(text)}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block px-4 py-3 text-sm font-medium text-neutral-900 hover:bg-emerald-50"
+        >
+          Bagikan via WhatsApp
+        </a>
+        <button
+          type="button"
+          onClick={handleCopy}
+          className="block w-full px-4 py-3 text-left text-sm font-medium text-neutral-900 hover:bg-emerald-50"
+        >
+          Salin Tautan
+        </button>
+      </div>
+
+      {feedback ? (
+        <p
+          role="status"
+          className="absolute inset-x-0 top-full z-10 mt-2 rounded-full bg-neutral-900 px-4 py-2 text-center text-sm font-medium text-white shadow-lg"
+        >
+          {feedback}
+        </p>
+      ) : null}
+    </div>
   );
 }

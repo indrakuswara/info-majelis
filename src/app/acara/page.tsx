@@ -3,6 +3,7 @@
 // lewat query string (form GET FilterBar — tanpa JavaScript tetap
 // berfungsi). Hanya konten terbit dari fungsi repository publik.
 
+import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
 import { EventCard } from "../../components/public/EventCard.tsx";
@@ -23,6 +24,12 @@ import { wibTodayISODate } from "../../lib/format.ts";
 import { nowWibISO } from "../../lib/utils.ts";
 
 export const instant = false;
+
+export const metadata: Metadata = {
+  title: "Daftar Acara",
+  description:
+    "Semua acara majelis yang akan datang — maulid, tabligh akbar, kajian, dan lainnya — dengan filter kota, kecamatan, dan kategori.",
+};
 
 interface AcaraSearchParams {
   range?: string;

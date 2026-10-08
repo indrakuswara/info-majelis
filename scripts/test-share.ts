@@ -56,6 +56,55 @@ assert.equal(
   "https://www.google.com/maps/search/?api=1&query=Masjid%20Agung%20Jl.%20Raya%20No.%201%20Bekasi%20Timur%20Kota%20Bekasi",
 );
 
+// --- buildMapsUrl: koordinat tersimpan menang atas pencarian teks ----------------
+// (Task 13: prioritas manual → koordinat → query, spec §10/§13.4)
+assert.equal(
+  buildMapsUrl({
+    mapsUrl: null,
+    venueName: "Masjid Agung",
+    address: "Jl. Raya No. 1",
+    district: "Bekasi Timur",
+    city: "Kota Bekasi",
+    lat: -6.2383,
+    lng: 106.9756,
+  }),
+  "https://www.google.com/maps/search/?api=1&query=-6.2383,106.9756",
+);
+
+// URL manual tetap menang atas koordinat.
+assert.equal(
+  buildMapsUrl({
+    mapsUrl: "https://maps.app.goo.gl/abc123",
+    venueName: "Masjid Agung",
+    address: "Jl. Raya No. 1",
+    district: "Bekasi Timur",
+    city: "Kota Bekasi",
+    lat: -6.2383,
+    lng: 106.9756,
+  }),
+  "https://maps.app.goo.gl/abc123",
+);
+
+// Koordinat tidak lengkap / di luar rentang ⇒ jatuh ke pencarian teks.
+for (const coords of [
+  { lat: -6.2383, lng: null },
+  { lat: null, lng: 106.9756 },
+  { lat: -999, lng: 999 },
+  { lat: Number.NaN, lng: 106.9756 },
+]) {
+  assert.equal(
+    buildMapsUrl({
+      mapsUrl: null,
+      venueName: "Masjid Agung",
+      address: "Jl. Raya No. 1",
+      district: "Bekasi Timur",
+      city: "Kota Bekasi",
+      ...coords,
+    }),
+    "https://www.google.com/maps/search/?api=1&query=Masjid%20Agung%20Jl.%20Raya%20No.%201%20Bekasi%20Timur%20Kota%20Bekasi",
+  );
+}
+
 // --- parseMapsCoords: pola @lat,lng ----------------------------------------------
 assert.deepEqual(
   parseMapsCoords(

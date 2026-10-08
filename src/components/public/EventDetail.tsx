@@ -11,6 +11,11 @@ import Link from "next/link";
 import { CATEGORY_STYLES, categoryLabel } from "../../lib/constants.ts";
 import type { Category, ExceptionKind } from "../../lib/domain.ts";
 import { formatTanggal, formatTanggalSingkat } from "../../lib/format.ts";
+import {
+  absoluteUrl,
+  buildEventJsonLd,
+  serializeJsonLd,
+} from "../../lib/seo.ts";
 import { buildShareText } from "../../lib/share.ts";
 import { MapsButton } from "./MapsButton.tsx";
 import { ShareButtons } from "./ShareButtons.tsx";
@@ -71,6 +76,10 @@ export interface EventDetailData {
   updatedAt: string;
   /** Path kanonis halaman ini untuk teks bagikan. */
   canonicalPath: string;
+  /** Awal acara sebagai ISO datetime +07:00 untuk JSON-LD; null = tanpa JSON-LD. */
+  startISO: string | null;
+  /** Selesai acara sebagai ISO datetime +07:00; null = tanpa waktu selesai pasti. */
+  endISO: string | null;
   /** URL rute yang sudah diselesaikan pemanggil (manual/override/fallback). */
   mapsUrl: string;
   exceptionKind?: ExceptionKind | null;
@@ -101,6 +110,7 @@ function fallbackMonthYear(date: string | null): string {
 
 export function EventDetail({ data }: { data: EventDetailData }) {
   const styles = CATEGORY_STYLES[data.category];
+  const canonicalUrl = absoluteUrl(data.canonicalPath);
   const shareText = buildShareText({
     title: data.title,
     dateLabel: data.dateLabel,
@@ -108,11 +118,35 @@ export function EventDetail({ data }: { data: EventDetailData }) {
     venueName: data.venueName,
     district: data.district,
     city: data.city,
-    url: data.canonicalPath,
+    url: canonicalUrl,
   });
+  const jsonLd = data.startISO
+    ? serializeJsonLd(
+        buildEventJsonLd({
+          title: data.title,
+          startISO: data.startISO,
+          endISO: data.endISO,
+          venueName: data.venueName,
+          address: data.address,
+          district: data.district,
+          city: data.city,
+          organizerName: data.organizer?.name ?? null,
+          organizerUrl: data.organizer?.href ?? null,
+          description: data.description,
+          imageUrl: data.posterUrl,
+          canonicalPath: data.canonicalPath,
+        }),
+      )
+    : null;
 
   return (
     <article className="overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
+      {jsonLd ? (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: jsonLd }}
+        />
+      ) : null}
       {data.posterUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
@@ -278,7 +312,7 @@ export function EventDetail({ data }: { data: EventDetailData }) {
 
         <div className="flex flex-col gap-2 sm:flex-row" aria-label="Aksi acara">
           <MapsButton href={data.mapsUrl} />
-          <ShareButtons text={shareText} />
+          <ShareButtons title={data.title} text={shareText} url={canonicalUrl} />
         </div>
 
         {data.description ? (

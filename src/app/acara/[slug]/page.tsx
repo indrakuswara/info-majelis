@@ -7,6 +7,7 @@
 //   tetap ditampilkan bertanda pada daftar kemunculan di detail rutin.
 // Semua data berasal dari getter/list repository published-only.
 
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
@@ -35,12 +36,18 @@ import type {
   ScheduleCommonFields,
 } from "../../../lib/domain.ts";
 import {
+  addDaysISODate,
   formatJamRange,
   formatTanggal,
   formatTanggalSingkat,
   wibTodayISODate,
 } from "../../../lib/format.ts";
 import { computeOccurrences, describePattern } from "../../../lib/recurrence.ts";
+import {
+  absoluteUrl,
+  categoryOgImagePath,
+  truncateDescription,
+} from "../../../lib/seo.ts";
 import { buildMapsUrl } from "../../../lib/share.ts";
 import { nowWibISO } from "../../../lib/utils.ts";
 
@@ -108,6 +115,28 @@ function latestUpdatedAt(values: string[]): string {
   return [...values].sort().at(-1) ?? values[0] ?? "";
 }
 
+/**
+ * Rentang ISO datetime (+07:00) event sekali jalan untuk JSON-LD.
+ * Semantik selesai mengikuti eventEndTs di db.ts: tanpa jam selesai
+ * ⇒ 23:59:59 hari terakhir; jam selesai lebih kecil dari jam mulai
+ * pada event satu hari ⇒ keesokan hari.
+ */
+function eventIsoRange(event: EventRecord): {
+  startISO: string;
+  endISO: string;
+} {
+  const startISO = `${event.startDate}T${event.startTime}:00+07:00`;
+  const lastDate = event.endDate ?? event.startDate;
+  if (event.endTime === null) {
+    return { startISO, endISO: `${lastDate}T23:59:59+07:00` };
+  }
+  const endDate =
+    event.endDate === null && event.endTime < event.startTime
+      ? addDaysISODate(lastDate, 1)
+      : lastDate;
+  return { startISO, endISO: `${endDate}T${event.endTime}:00+07:00` };
+}
+
 function eventData(
   event: EventRecord,
   organizer: EventDetailOrganizer | null,
@@ -153,12 +182,15 @@ function eventData(
     libraryUrl: event.libraryUrl,
     updatedAt: event.updatedAt,
     canonicalPath: `/acara/${event.slug}`,
+    ...eventIsoRange(event),
     mapsUrl: buildMapsUrl({
       mapsUrl: event.mapsUrl,
       venueName: event.venueName,
       address: event.address,
       district: event.district,
       city: event.city,
+      lat: event.lat,
+      lng: event.lng,
     }),
   };
 }
@@ -176,6 +208,10 @@ function routineNextMapsUrl(
     address: next?.address ?? routine.address,
     district: routine.district,
     city: routine.city,
+    // Koordinat tersimpan adalah milik lokasi induk — jangan dipakai
+    // bila kemunculan terdekat adalah edisi spesial berlokasi lain.
+    lat: specialLocationChanged ? null : routine.lat,
+    lng: specialLocationChanged ? null : routine.lng,
   });
 }
 
@@ -245,6 +281,8 @@ async function routineDetail(
       ...exceptions.map((e) => e.updatedAt),
     ]),
     canonicalPath: `/acara/${routine.slug}`,
+    startISO: next?.startISO ?? null,
+    endISO: next?.endISO ?? null,
     mapsUrl: routineNextMapsUrl(routine, next),
     specialNote: routine.specialNote,
     effectiveLabel:
@@ -381,12 +419,16 @@ async function occurrenceDetail(
       ...(exception ? [exception.updatedAt] : []),
     ]),
     canonicalPath: `/acara/${routine.slug}?tanggal=${occurrence.date}`,
+    startISO: occurrence.startISO,
+    endISO: occurrence.endISO,
     mapsUrl: buildMapsUrl({
       mapsUrl: specialLocationChanged ? null : routine.mapsUrl,
       venueName: occurrence.venueName,
       address: occurrence.address,
       district: routine.district,
       city: routine.city,
+      lat: specialLocationChanged ? null : routine.lat,
+      lng: specialLocationChanged ? null : routine.lng,
     }),
     exceptionKind: occurrence.exceptionKind,
     exceptionNote:
@@ -413,6 +455,135 @@ async function occurrenceDetail(
       <EventDetail data={data} />
     </div>
   );
+}
+
+/**
+ * Metadata SEO per detail (spec §12): judul memakai template root
+ * ("<Judul> — Info Majelis"), deskripsi ringkas dari field acara,
+ * gambar Open Graph = poster bila ada, selain itu gambar statis per
+ * kategori dari public/og/.
+ */
+export async function generateMetadata({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ tanggal?: string | string[] }>;
+}): Promise<Metadata> {
+  await connection();
+  await ensureSchema();
+  const { slug } = await params;
+  const { tanggal } = await searchParams;
+
+  const compose = (input: {
+    title: string;
+    category: EventRecord["category"];
+    posterUrl: string | null;
+    dateLabel: string;
+    timeLabel: string;
+    venueName: string;
+    district: string;
+    city: string;
+    description: string | null;
+    canonicalPath: string;
+  }): Metadata => {
+    const description = truncateDescription(
+      input.description ??
+        `${input.dateLabel}, ${input.timeLabel} di ${input.venueName}, ${input.district}, ${input.city}.`,
+    );
+    const image = absoluteUrl(
+      input.posterUrl ?? categoryOgImagePath(input.category),
+    );
+    return {
+      title: input.title,
+      description,
+      alternates: { canonical: input.canonicalPath },
+      openGraph: {
+        type: "website",
+        title: `${input.title} — Info Majelis`,
+        description,
+        url: absoluteUrl(input.canonicalPath),
+        images: [{ url: image, alt: input.title }],
+      },
+    };
+  };
+
+  if (typeof tanggal === "string" && tanggal !== "") {
+    const routine = await getPublishedRoutineBySlug(slug);
+    if (routine) {
+      const exceptions = await listRoutineExceptions(routine.id);
+      const occurrence = computeOccurrences(
+        routine,
+        exceptions,
+        `${tanggal}T00:00:00+07:00`,
+        1,
+        { includeSkipped: true },
+      )[0];
+      if (
+        occurrence &&
+        occurrence.date === tanggal &&
+        occurrence.exceptionKind !== "libur"
+      ) {
+        return compose({
+          title: routine.title,
+          category: routine.category,
+          posterUrl: routine.posterUrl,
+          dateLabel: formatTanggal(occurrence.date),
+          timeLabel: formatJamRange(occurrence.startTime, routine.endTime),
+          venueName: occurrence.venueName,
+          district: routine.district,
+          city: routine.city,
+          description:
+            exceptions.find((e) => e.date === tanggal)
+              ?.overrideDescription ?? routine.description,
+          canonicalPath: `/acara/${routine.slug}?tanggal=${occurrence.date}`,
+        });
+      }
+    }
+    return { title: "Acara tidak ditemukan" };
+  }
+
+  const event = await getPublishedEventBySlug(slug);
+  if (event) {
+    return compose({
+      title: event.title,
+      category: event.category,
+      posterUrl: event.posterUrl,
+      dateLabel:
+        event.endDate && event.endDate !== event.startDate
+          ? `${formatTanggal(event.startDate)} – ${formatTanggalSingkat(event.endDate)}`
+          : formatTanggal(event.startDate),
+      timeLabel: formatJamRange(event.startTime, event.endTime),
+      venueName: event.venueName,
+      district: event.district,
+      city: event.city,
+      description: event.description,
+      canonicalPath: `/acara/${event.slug}`,
+    });
+  }
+
+  const routine = await getPublishedRoutineBySlug(slug);
+  if (routine) {
+    const exceptions = await listRoutineExceptions(routine.id);
+    const next =
+      computeOccurrences(routine, exceptions, nowWibISO(), 1)[0] ?? null;
+    return compose({
+      title: routine.title,
+      category: routine.category,
+      posterUrl: routine.posterUrl,
+      dateLabel: next
+        ? formatTanggal(next.date)
+        : describePattern(routine.pattern, { startTime: routine.startTime }),
+      timeLabel: formatJamRange(routine.startTime, routine.endTime),
+      venueName: routine.venueName,
+      district: routine.district,
+      city: routine.city,
+      description: routine.description,
+      canonicalPath: `/acara/${routine.slug}`,
+    });
+  }
+
+  return { title: "Acara tidak ditemukan" };
 }
 
 export default async function AcaraDetailPage({

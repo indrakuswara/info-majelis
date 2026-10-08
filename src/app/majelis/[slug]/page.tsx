@@ -28,6 +28,7 @@ import {
   formatTanggal,
   wibTodayISODate,
 } from "../../../lib/format.ts";
+import { absoluteUrl } from "../../../lib/seo.ts";
 import {
   computeOccurrences,
   describePattern,
@@ -46,11 +47,23 @@ export async function generateMetadata({
   const { slug } = await params;
   const majelis = await getPublishedMajelisBySlug(slug);
   if (!majelis) return { title: "Majelis tidak ditemukan" };
+  const description =
+    majelis.description ??
+    `Profil ${majelis.name} beserta acara dan jadwal rutinnya di Info Majelis.`;
+  const image = majelis.photoUrl ?? majelis.logoUrl;
   return {
     title: majelis.name,
-    description:
-      majelis.description ??
-      `Profil ${majelis.name} beserta acara dan jadwal rutinnya di Info Majelis.`,
+    description,
+    alternates: { canonical: `/majelis/${majelis.slug}` },
+    openGraph: {
+      type: "profile",
+      title: `${majelis.name} — Info Majelis`,
+      description,
+      url: absoluteUrl(`/majelis/${majelis.slug}`),
+      ...(image
+        ? { images: [{ url: absoluteUrl(image), alt: majelis.name }] }
+        : {}),
+    },
   };
 }
 

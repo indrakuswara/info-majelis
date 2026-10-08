@@ -18,8 +18,10 @@ export function buildShareText(i: {
 }
 
 /**
- * Tautan rute Google Maps: URL manual admin menang apa adanya;
- * fallback tautan pencarian Maps dari nama tempat + alamat + kecamatan + kota.
+ * Tautan rute Google Maps, prioritas (spec §10, §13.4):
+ * 1. URL manual admin menang apa adanya;
+ * 2. koordinat tersimpan (hasil ekstraksi best-effort dari URL manual);
+ * 3. tautan pencarian Maps dari nama tempat + alamat + kecamatan + kota.
  */
 export function buildMapsUrl(i: {
   mapsUrl: string | null;
@@ -27,9 +29,23 @@ export function buildMapsUrl(i: {
   address: string;
   district: string;
   city: string;
+  lat?: number | null;
+  lng?: number | null;
 }): string {
   const manual = i.mapsUrl?.trim();
   if (manual) return manual;
+  if (
+    typeof i.lat === "number" &&
+    typeof i.lng === "number" &&
+    Number.isFinite(i.lat) &&
+    Number.isFinite(i.lng) &&
+    i.lat >= -90 &&
+    i.lat <= 90 &&
+    i.lng >= -180 &&
+    i.lng <= 180
+  ) {
+    return `https://www.google.com/maps/search/?api=1&query=${i.lat},${i.lng}`;
+  }
   const query = [i.venueName, i.address, i.district, i.city]
     .map((part) => part.trim())
     .filter((part) => part !== "")
