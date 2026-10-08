@@ -128,7 +128,9 @@ export default async function AdminMajelisPage({
                 className="flex flex-wrap items-center justify-between gap-3 px-5 py-4"
               >
                 <div className="min-w-0">
-                  <p className="truncate font-medium">{majelis.name}</p>
+                  <p className="truncate font-medium">
+                    {majelis.name.trim() === "" ? "(Tanpa nama)" : majelis.name}
+                  </p>
                   <p className="mt-1 text-sm text-neutral-500">
                     {majelis.city || "Kota belum diisi"}
                     {majelis.leader ? ` · ${majelis.leader}` : ""} · Diubah{" "}

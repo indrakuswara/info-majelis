@@ -23,6 +23,7 @@ import {
   unpublishMajelisAction,
   type MajelisSaveInput,
 } from "../../app/admin/(protected)/majelis/actions.ts";
+import { deleteImageAction } from "../../app/admin/(protected)/upload-action.ts";
 import { ActionButton } from "./ActionButton.tsx";
 import { useUnsavedChangesGuard } from "./AdminShell.tsx";
 import { ConfirmDialog } from "./ConfirmDialog.tsx";
@@ -115,6 +116,15 @@ export function MajelisForm({
   const [newOwnerId] = useState<string>(() => crypto.randomUUID());
   const ownerId = recordId ?? newOwnerId;
 
+  // URL gambar yang TERCATAT tersimpan terakhir (bukan nilai form saat
+  // ini). ImageUpload tidak menghapus berkas saat ganti/hapus di form;
+  // berkas lama baru dihapus di persist() SETELAH simpan berhasil, jadi
+  // meninggalkan form tanpa simpan tidak merusak gambar record lama.
+  const savedImagesRef = useRef<{ logoUrl: string | null; photoUrl: string | null }>({
+    logoUrl: initial?.logoUrl ?? null,
+    photoUrl: initial?.photoUrl ?? null,
+  });
+
   const dirty = useMemo(
     () => JSON.stringify(fields) !== savedSnapshot,
     [fields, savedSnapshot],
@@ -173,6 +183,24 @@ export function MajelisForm({
     setSlug(result.slug);
     setLastSavedAt(result.updatedAt);
     setSavedSnapshot(JSON.stringify(fields));
+    // Simpan BERHASIL — sekarang aman menghapus berkas gambar lama yang
+    // sudah tidak dirujuk record: URL awal yang berbeda dari URL yang
+    // baru tersimpan (termasuk menjadi null) dihapus dari storage.
+    const previousImages = savedImagesRef.current;
+    savedImagesRef.current = {
+      logoUrl: fields.logoUrl,
+      photoUrl: fields.photoUrl,
+    };
+    const staleUrls = new Set<string>();
+    if (previousImages.logoUrl && previousImages.logoUrl !== fields.logoUrl) {
+      staleUrls.add(previousImages.logoUrl);
+    }
+    if (previousImages.photoUrl && previousImages.photoUrl !== fields.photoUrl) {
+      staleUrls.add(previousImages.photoUrl);
+    }
+    for (const staleUrl of staleUrls) {
+      await deleteImageAction(staleUrl);
+    }
     return result.id;
   };
 

@@ -48,7 +48,7 @@ export default async function AdminEditMajelisPage({
         ← Kembali ke daftar Majelis
       </Link>
       <h1 className="mt-3 text-3xl font-bold tracking-tight">
-        Ubah Majelis: {majelis.name}
+        Ubah Majelis: {majelis.name.trim() === "" ? "(Tanpa nama)" : majelis.name}
       </h1>
       <p className="mt-2 text-neutral-600">
         Terhubung ke {linkedEvents} event dan {linkedRoutines} jadwal rutin.

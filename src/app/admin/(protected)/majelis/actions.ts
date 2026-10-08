@@ -43,7 +43,7 @@ export interface MajelisSaveInput {
 
 export type SaveMajelisResult =
   | { ok: true; id: string; slug: string; updatedAt: string }
-  | { ok: false; error: string };
+  | { ok: false; error: string; missing?: MissingField[] };
 
 export type PublishMajelisResult =
   | { ok: true }
@@ -70,9 +70,12 @@ export async function saveMajelisAction(
   await ensureSchema();
 
   const data: Omit<MajelisInput, "status" | "createdBy"> = {
-    // Draft boleh disimpan setengah jadi (spec §6.6); nama kosong
-    // disimpan sebagai "(Tanpa nama)" agar tetap dapat dikenali di daftar.
-    name: input.name.trim() === "" ? "(Tanpa nama)" : input.name.trim(),
+    // Draft boleh disimpan setengah jadi (spec §6.6): nama disimpan
+    // apa adanya (string kosong tetap kosong di DB) agar gerbang
+    // publish — validateMajelisForPublish memeriksa name.trim() —
+    // tidak dapat dilewati placeholder. Fallback tampilan "(Tanpa
+    // nama)" hanya di lapisan tampilan daftar.
+    name: input.name.trim(),
     city: input.city.trim(),
     leader: blankToNull(input.leader),
     logoUrl: input.logoUrl,
@@ -92,6 +95,22 @@ export async function saveMajelisAction(
     if (input.id) {
       const existing = await getMajelisById(input.id);
       if (!existing) return { ok: false, error: "Majelis tidak ditemukan." };
+      // Majelis yang SUDAH terbit tidak boleh disimpan menjadi tidak
+      // lengkap (spec §6.5/§6.6): data baru wajib lolos validasi
+      // publish, kalau tidak simpan ditolak & data lama tidak berubah.
+      // Draft tetap boleh disimpan tidak lengkap.
+      if (existing.status === "published") {
+        const missing = validateMajelisForPublish(data);
+        if (missing.length > 0) {
+          return {
+            ok: false,
+            error: `Majelis ini sudah terbit sehingga harus tetap lengkap. Simpan ditolak — field yang kurang: ${missing
+              .map((m) => m.label)
+              .join(", ")}.`,
+            missing,
+          };
+        }
+      }
       // Status TIDAK diubah oleh simpan — publish/unpublish punya aksi sendiri.
       const updated = await updateMajelis(input.id, data);
       if (!updated) return { ok: false, error: "Majelis tidak ditemukan." };
