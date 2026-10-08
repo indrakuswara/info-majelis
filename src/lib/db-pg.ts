@@ -1063,3 +1063,31 @@ export async function listKnownDistricts(city: string): Promise<string[]> {
     .filter((d) => d.trim() !== "")
     .sort((a, b) => a.localeCompare(b));
 }
+
+/**
+ * Kecamatan dari data TERBIT saja (spec §9.1) — sumber datalist publik.
+ * Paritas dengan listPublishedDistrictsSqlite di db.ts; rutin memakai
+ * semantik publik yang sama seperti listPublishedRoutines
+ * (published + aktif).
+ */
+export async function listPublishedDistricts(city: string): Promise<string[]> {
+  const found = new Set<string>();
+  const ev = await query(
+    "SELECT DISTINCT district FROM events WHERE city = $1 AND status = 'published'",
+    [city],
+  );
+  for (const r of ev) found.add(str(r.district));
+  const rt = await query(
+    "SELECT DISTINCT district FROM routines WHERE city = $1 AND status = 'published' AND is_active = 1",
+    [city],
+  );
+  for (const r of rt) found.add(str(r.district));
+  const mj = await query(
+    "SELECT DISTINCT base_district AS district FROM majelis WHERE city = $1 AND status = 'published' AND base_district IS NOT NULL",
+    [city],
+  );
+  for (const r of mj) found.add(str(r.district));
+  return [...found]
+    .filter((d) => d.trim() !== "")
+    .sort((a, b) => a.localeCompare(b));
+}

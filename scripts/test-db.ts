@@ -760,4 +760,81 @@ let rutin: RoutineRecord;
   assert.equal(dariSource.length, 0);
 }
 
+// --- 15. listPublishedDistricts: hanya data terbit (spec §9.1) -------------------
+// Saran kecamatan publik TIDAK boleh membocorkan kecamatan yang hanya
+// ada di draft; listKnownDistricts (saran form admin) tetap memuat semua.
+{
+  await db.createEvent(
+    makeEventInput({
+      title: "Event Draft Kecamatan Unik",
+      status: "draft",
+      district: "Draftevent",
+    }),
+  );
+  await db.createRoutine(
+    makeRoutineInput({
+      title: "Rutin Draft Kecamatan Unik",
+      status: "draft",
+      district: "Draftrutin",
+    }),
+  );
+  await db.createMajelis(
+    makeMajelisInput({
+      name: "Majelis Draft Kecamatan Unik",
+      status: "draft",
+      baseDistrict: "Draftmajelis",
+    }),
+  );
+  // Rutin terbit tapi nonaktif juga bukan data publik.
+  await db.createRoutine(
+    makeRoutineInput({
+      title: "Rutin Terbit Nonaktif Kecamatan Unik",
+      status: "published",
+      isActive: false,
+      district: "Nonaktif",
+    }),
+  );
+  await db.createEvent(
+    makeEventInput({
+      title: "Event Terbit Kecamatan Unik",
+      status: "published",
+      district: "Terbitan",
+    }),
+  );
+  await db.createEvent(
+    makeEventInput({
+      title: "Event Terbit Depok Kecamatan Unik",
+      status: "published",
+      city: "Kota Depok",
+      district: "Depokterbit",
+    }),
+  );
+
+  const publishedBekasi = await db.listPublishedDistricts("Kota Bekasi");
+  const knownBekasi = await db.listKnownDistricts("Kota Bekasi");
+  for (const draftOnly of ["Draftevent", "Draftrutin", "Draftmajelis", "Nonaktif"]) {
+    assert.ok(
+      !publishedBekasi.includes(draftOnly),
+      `listPublishedDistricts membocorkan kecamatan non-terbit: ${draftOnly}`,
+    );
+    assert.ok(
+      knownBekasi.includes(draftOnly),
+      `listKnownDistricts harus tetap memuat kecamatan non-terbit: ${draftOnly}`,
+    );
+  }
+  // District terbit (baru & dari section sebelumnya) muncul di keduanya.
+  for (const terbit of ["Terbitan", "Bekasi Timur"]) {
+    assert.ok(publishedBekasi.includes(terbit));
+    assert.ok(knownBekasi.includes(terbit));
+  }
+  // Terurut & unik, sama seperti listKnownDistricts.
+  assert.deepEqual(publishedBekasi, [...publishedBekasi].sort());
+  assert.equal(new Set(publishedBekasi).size, publishedBekasi.length);
+
+  // Filter kota: district terbit kota lain tidak ikut terbawa.
+  assert.ok(!publishedBekasi.includes("Depokterbit"));
+  const publishedDepok = await db.listPublishedDistricts("Kota Depok");
+  assert.deepEqual(publishedDepok, ["Depokterbit"]);
+}
+
 console.log("test-db: OK");

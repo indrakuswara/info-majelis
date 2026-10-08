@@ -1351,6 +1351,40 @@ function listKnownDistrictsSqlite(city: string): string[] {
   );
 }
 
+/**
+ * Kecamatan dari data TERBIT saja (spec §9.1) — sumber datalist publik.
+ * Sengaja terpisah dari listKnownDistricts: saran form admin memang
+ * mengambil semua data yang pernah diinput (termasuk draft), sedangkan
+ * jalur publik tidak boleh membocorkan keberadaan draft. Rutin memakai
+ * semantik publik yang sama seperti listPublishedRoutines
+ * (published + aktif).
+ */
+function listPublishedDistrictsSqlite(city: string): string[] {
+  const db = getSqlite();
+  const found = new Set<string>();
+  const ev = db
+    .prepare(
+      "SELECT DISTINCT district FROM events WHERE city = ? AND status = 'published'",
+    )
+    .all(city) as Row[];
+  for (const r of ev) found.add(str(r.district));
+  const rt = db
+    .prepare(
+      "SELECT DISTINCT district FROM routines WHERE city = ? AND status = 'published' AND is_active = 1",
+    )
+    .all(city) as Row[];
+  for (const r of rt) found.add(str(r.district));
+  const mj = db
+    .prepare(
+      "SELECT DISTINCT base_district AS district FROM majelis WHERE city = ? AND status = 'published' AND base_district IS NOT NULL",
+    )
+    .all(city) as Row[];
+  for (const r of mj) found.add(str(r.district));
+  return [...found].filter((d) => d.trim() !== "").sort((a, b) =>
+    a.localeCompare(b),
+  );
+}
+
 // --- Admin (SQLite) ----------------------------------------------------------
 
 function toAdmin(r: Row): AdminRecord {
@@ -1614,6 +1648,12 @@ export async function listRoutineExceptions(
 export async function listKnownDistricts(city: string): Promise<string[]> {
   if (isPgBackend()) return pg.listKnownDistricts(city);
   return listKnownDistrictsSqlite(city);
+}
+
+/** Kecamatan dari data terbit saja — untuk saran di halaman publik (spec §9.1). */
+export async function listPublishedDistricts(city: string): Promise<string[]> {
+  if (isPgBackend()) return pg.listPublishedDistricts(city);
+  return listPublishedDistrictsSqlite(city);
 }
 
 export async function getAdminByEmail(

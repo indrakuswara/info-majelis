@@ -33,7 +33,7 @@ export function FilterBar({
   /** Path tujuan form, mis. "/acara" (atau "/" dari beranda). */
   action: string;
   values: FilterValues;
-  /** Saran kecamatan untuk datalist (dari listKnownDistricts server). */
+  /** Saran kecamatan untuk datalist (dari data terbit saja, via getDistrictSuggestions server). */
   districts: string[];
   /** Bila diberikan, jumlah hasil ditampilkan di bawah form. */
   resultCount?: number;

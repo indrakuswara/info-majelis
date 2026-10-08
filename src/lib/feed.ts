@@ -10,7 +10,7 @@
 import {
   eventEndTs,
   eventStartTs,
-  listKnownDistricts,
+  listPublishedDistricts,
   listPublishedMajelis,
   listPublishedRoutines,
   listPublishedUpcoming,
@@ -251,17 +251,19 @@ export async function getUpcomingFeed(
 }
 
 /**
- * Daftar kecamatan yang dikenal untuk datalist FilterBar: untuk kota
- * terpilih dari listKnownDistricts kota itu; tanpa kota, gabungan
- * seluruh wilayah (kecamatan memang hanya bermakna bersama kotanya,
- * tetapi saran bebas tetap membantu pencarian).
+ * Daftar kecamatan untuk datalist FilterBar publik: HANYA dari data
+ * terbit (spec §9.1, listPublishedDistricts) — kecamatan yang hanya ada
+ * di draft tidak boleh bocor ke saran publik. Untuk kota terpilih dari
+ * kota itu; tanpa kota, gabungan seluruh wilayah (kecamatan memang
+ * hanya bermakna bersama kotanya, tetapi saran bebas tetap membantu
+ * pencarian).
  */
 export async function getDistrictSuggestions(
   city?: string,
 ): Promise<string[]> {
-  if (city) return listKnownDistricts(city);
+  if (city) return listPublishedDistricts(city);
   const perCity = await Promise.all(
-    REGIONS.map((region) => listKnownDistricts(region)),
+    REGIONS.map((region) => listPublishedDistricts(region)),
   );
   return [...new Set(perCity.flat())].sort((a, b) => a.localeCompare(b));
 }
