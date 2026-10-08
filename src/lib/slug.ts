@@ -1,6 +1,7 @@
 /**
  * Membuat slug URL dari teks bebas: huruf kecil, diakritik dibuang,
- * setiap rangkaian karakter non-alfanumerik menjadi satu "-",
+ * apostrof dibuang agar kata transliterasi menyatu (Diba'i → dibai),
+ * setiap rangkaian karakter non-alfanumerik lain menjadi satu "-",
  * tanpa "-" di awal/akhir.
  */
 export function slugify(text: string): string {
@@ -8,6 +9,7 @@ export function slugify(text: string): string {
     .toLowerCase()
     .normalize("NFKD")
     .replace(/[̀-ͯ]/g, "")
+    .replace(/['’]/g, "")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 }

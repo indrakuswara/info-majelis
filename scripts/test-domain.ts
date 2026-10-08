@@ -12,6 +12,11 @@ assert.equal(
   "maulid-akbar-haul-ke-10",
 );
 
+// slugify: apostrof dibuang & huruf menyatu (transliterasi: Diba'i -> dibai)
+assert.equal(slugify("Maulid Diba'i"), "maulid-dibai");
+assert.equal(slugify("Isra Mi'raj"), "isra-miraj");
+assert.equal(slugify("Dhiya'ul Lami'"), "dhiyaul-lami");
+
 // uniqueSlug: sufiks -2, -3, ... bila nama sudah dipakai
 assert.equal(uniqueSlug("maulid", new Set(["maulid"])), "maulid-2");
 
