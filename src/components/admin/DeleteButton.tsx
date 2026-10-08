@@ -4,7 +4,7 @@
 // langsung. Klik pertama hanya membuka ConfirmDialog; penghapusan baru
 // berjalan setelah admin mengklik "Hapus permanen" secara eksplisit.
 
-import { useRef, useState } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import type { ContentStatus } from "../../lib/domain.ts";
 import { ConfirmDialog } from "./ConfirmDialog.tsx";
 import { useToast } from "./Toast.tsx";
@@ -12,12 +12,15 @@ import { useToast } from "./Toast.tsx";
 export interface DeleteButtonProps {
   itemLabel: string;
   status: ContentStatus;
+  /** Rincian tambahan di badan dialog (mis. jumlah item terhubung, Task 8). */
+  detail?: ReactNode;
   onDelete(): Promise<void>;
 }
 
 export function DeleteButton({
   itemLabel,
   status,
+  detail,
   onDelete,
 }: DeleteButtonProps) {
   const { show } = useToast();
@@ -63,6 +66,7 @@ export function DeleteButton({
               {itemLabel}
             </strong>{" "}
             akan dihapus secara permanen dan tidak dapat dikembalikan.
+            {detail}
           </>
         }
         confirmLabel="Hapus permanen"

@@ -1,22 +1,30 @@
-// Placeholder tambah Majelis — formulir penuh dikerjakan Task 8.
+// Tambah Majelis (plan Task 8): form profil kosong; record baru selalu
+// lahir sebagai draft lewat saveMajelisAction dari MajelisForm.
 
 import Link from "next/link";
+import { MajelisForm } from "../../../../../components/admin/MajelisForm.tsx";
+import { ensureSchema } from "../../../../../lib/db.ts";
 
-export default function AdminNewMajelisPage() {
+export const instant = false;
+
+export default async function AdminNewMajelisPage() {
+  await ensureSchema();
+
   return (
     <main className="mx-auto w-full max-w-4xl px-4 py-8 sm:px-6">
-      <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
-        <h1 className="text-2xl font-bold">Tambah Majelis</h1>
-        <p className="mt-3 text-neutral-600">
-          Formulir profil majelis akan tersedia pada Task 8, lengkap dengan
-          unggah logo/foto dan validasi publish interaktif.
-        </p>
-        <Link
-          href="/admin/majelis"
-          className="mt-5 inline-block rounded-md border border-neutral-300 px-4 py-2 font-semibold hover:bg-neutral-100"
-        >
-          Kembali ke daftar Majelis
-        </Link>
+      <Link
+        href="/admin/majelis"
+        className="text-sm font-medium text-emerald-800 underline"
+      >
+        ← Kembali ke daftar Majelis
+      </Link>
+      <h1 className="mt-3 text-3xl font-bold tracking-tight">Tambah Majelis</h1>
+      <p className="mt-2 text-neutral-600">
+        Draft boleh disimpan setengah jadi. Untuk menerbitkan, nama majelis
+        dan kota/kabupaten basis wajib terisi.
+      </p>
+      <div className="mt-6 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+        <MajelisForm initial={null} />
       </div>
     </main>
   );
