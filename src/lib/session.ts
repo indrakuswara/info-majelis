@@ -30,7 +30,9 @@ export async function verifySessionToken(
   token: string,
 ): Promise<string | null> {
   try {
-    const { payload } = await jwtVerify(token, getSecret());
+    const { payload } = await jwtVerify(token, getSecret(), {
+      algorithms: ["HS256"],
+    });
     if (typeof payload.email === "string") return payload.email;
     return typeof payload.sub === "string" ? payload.sub : null;
   } catch {

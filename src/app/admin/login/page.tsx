@@ -13,7 +13,18 @@ import { ensureSchema } from "../../../lib/db.ts";
 export const instant = false;
 
 function safeNext(raw: string | undefined): string {
-  if (raw && raw.startsWith("/admin") && !raw.startsWith("//")) return raw;
+  if (!raw) return "/admin";
+  try {
+    // Parse terhadap base dummy agar path traversal (`/admin/../`),
+    // URL absolut/`//host` eksternal, dan prefix palsu (`/administrator`)
+    // dinormalisasi lebih dulu, baru jalurnya diperiksa persis.
+    const { pathname } = new URL(raw, "http://info-majelis.local");
+    if (pathname === "/admin" || pathname.startsWith("/admin/")) {
+      return pathname;
+    }
+  } catch {
+    // string yang tidak dapat di-parse sebagai URL: fallback di bawah.
+  }
   return "/admin";
 }
 
