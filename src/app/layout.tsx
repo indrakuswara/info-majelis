@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Suspense } from "react";
+import { NameplateDate } from "../components/public/NameplateDate.tsx";
 import { SiteChrome } from "../components/public/SiteChrome.tsx";
 import { getSiteUrl } from "../lib/seo.ts";
 import "./globals.css";
@@ -67,7 +69,18 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col bg-neutral-50">
-        <SiteChrome>{children}</SiteChrome>
+        <SiteChrome
+          nameplateDate={
+            // Tanggal nameplate dirender server (NameplateDate) dan
+            // dibungkus Suspense: halaman statis (/offline, 404) tetap
+            // ter-prerender sebagai shell, tanggal mengalir per request.
+            <Suspense fallback={null}>
+              <NameplateDate />
+            </Suspense>
+          }
+        >
+          {children}
+        </SiteChrome>
       </body>
     </html>
   );

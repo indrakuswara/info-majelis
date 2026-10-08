@@ -13,20 +13,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useSyncExternalStore, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { SITE_COVERAGE_NOTE } from "../../lib/constants.ts";
 import { ServiceWorkerRegister } from "../pwa/ServiceWorkerRegister.tsx";
-
-/** Label tanggal hari ini dalam WIB, mis. "Kamis, 8 Oktober 2026". */
-function wibTodayLabel(): string {
-  return new Intl.DateTimeFormat("id-ID", {
-    timeZone: "Asia/Jakarta",
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  }).format(new Date());
-}
 
 const NAV: { href: string; label: string }[] = [
   { href: "/", label: "Beranda" },
@@ -36,20 +25,18 @@ const NAV: { href: string; label: string }[] = [
   { href: "/arsip", label: "Arsip" },
 ];
 
-const subscribeNoop = () => () => {};
-
-export function SiteChrome({ children }: { children: ReactNode }) {
+export function SiteChrome({
+  children,
+  nameplateDate,
+}: {
+  children: ReactNode;
+  // Tanggal hari ini pada nameplate, dirender di server oleh
+  // NameplateDate (lihat komponen itu) dan diteruskan dari layout
+  // root — tanggal adalah konten sehingga wajib sudah ada di HTML
+  // server, bukan diisi klien sesudah hidrasi.
+  nameplateDate?: ReactNode;
+}) {
   const pathname = usePathname();
-  // Tanggal nameplate hanya dibaca di klien (snapshot server = null,
-  // jadi tidak ada ketidakcocokan hidrasi) dengan zona Asia/Jakarta
-  // eksplisit agar tidak bergeser oleh zona waktu perangkat — halaman
-  // statis seperti 404 pun tetap bisa di-prerender tanpa membaca
-  // waktu di server.
-  const todayLabel = useSyncExternalStore(
-    subscribeNoop,
-    () => wibTodayLabel(),
-    () => null,
-  );
   if (pathname?.startsWith("/admin")) {
     return <>{children}</>;
   }
@@ -66,9 +53,7 @@ export function SiteChrome({ children }: { children: ReactNode }) {
               >
                 Info Majelis
               </Link>
-              {todayLabel ? (
-                <span className="text-xs text-neutral-500">{todayLabel}</span>
-              ) : null}
+              {nameplateDate}
             </div>
             <p className="border-b border-[#e3e0d5] py-1.5 text-xs text-neutral-500">
               {SITE_COVERAGE_NOTE}
