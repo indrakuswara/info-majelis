@@ -181,7 +181,8 @@ let majelis: MajelisRecord;
 let eventUtama: EventRecord;
 {
   eventUtama = await db.createEvent(makeEventInput());
-  assert.equal(eventUtama.slug, "maulid-akbar-contoh");
+  // Slug event = slug judul + tanggal mulai (spec §6.2).
+  assert.equal(eventUtama.slug, "maulid-akbar-contoh-2026-10-20");
   assert.equal(eventUtama.createdBy, "admin@test");
   assert.deepEqual(eventUtama.speakers, ["Habib Contoh"]);
 
@@ -618,8 +619,145 @@ let rutin: RoutineRecord;
     title: "Maulid Akbar Contoh Diganti",
   });
   assert.equal(updated?.title, "Maulid Akbar Contoh Diganti");
-  assert.equal(updated?.slug, "maulid-akbar-contoh");
+  assert.equal(updated?.slug, "maulid-akbar-contoh-2026-10-20");
   assert.ok((updated?.updatedAt ?? "") >= eventUtama.updatedAt);
+}
+
+// --- 11. Slug event: judul + tanggal; judul sama tanggal beda ⇒ slug beda --------
+{
+  const a = await db.createEvent(
+    makeEventInput({
+      title: "Haul Bersama Uji Slug",
+      startDate: "2026-12-01",
+      endDate: null,
+    }),
+  );
+  const b = await db.createEvent(
+    makeEventInput({
+      title: "Haul Bersama Uji Slug",
+      startDate: "2026-12-02",
+      endDate: null,
+    }),
+  );
+  assert.equal(a.slug, "haul-bersama-uji-slug-2026-12-01");
+  assert.equal(b.slug, "haul-bersama-uji-slug-2026-12-02");
+  assert.notEqual(a.slug, b.slug);
+  // Judul diganti sesudahnya ⇒ slug tetap stabil.
+  const renamed = await db.updateEvent(a.id, {
+    title: "Haul Bersama Judul Baru",
+  });
+  assert.equal(renamed?.slug, "haul-bersama-uji-slug-2026-12-01");
+}
+
+// --- 12. Promosi TIDAK menimpa record yang sudah terhubung ke majelis lain -------
+{
+  const pemilikAsli = await db.createMajelis(
+    makeMajelisInput({ name: "Majelis Pemilik Asli" }),
+  );
+  const namaCampuran = "Panitia Campuran Uji";
+  // Event campuran: SUDAH terhubung ke majelis lain, nama manual ikut terisi.
+  const evCampuran = await db.createEvent(
+    makeEventInput({
+      title: "Event Campuran Terhubung",
+      organizerMajelisId: pemilikAsli.id,
+      organizerNameManual: namaCampuran,
+      startDate: "2026-12-05",
+    }),
+  );
+  const rtCampuran = await db.createRoutine(
+    makeRoutineInput({
+      title: "Rutin Campuran Terhubung",
+      organizerMajelisId: pemilikAsli.id,
+      organizerNameManual: namaCampuran,
+    }),
+  );
+  // Pasangan murni manual (belum terhubung) dengan nama yang sama.
+  const evMurni = await db.createEvent(
+    makeEventInput({
+      title: "Event Murni Manual Campuran",
+      organizerNameManual: namaCampuran,
+      startDate: "2026-12-06",
+    }),
+  );
+  const rtMurni = await db.createRoutine(
+    makeRoutineInput({
+      title: "Rutin Murni Manual Campuran",
+      organizerNameManual: namaCampuran,
+    }),
+  );
+
+  const hasil = await db.promoteManualOrganizer(namaCampuran, "Kota Bekasi");
+  // Hanya yang belum terhubung yang tertaut & terhitung.
+  assert.equal(hasil.linkedEvents, 1);
+  assert.equal(hasil.linkedRoutines, 1);
+
+  const evCampuranAfter = await db.getEventById(evCampuran.id);
+  assert.equal(
+    evCampuranAfter?.organizerMajelisId,
+    pemilikAsli.id,
+    "event campuran berpindah majelis saat promosi",
+  );
+  assert.equal(evCampuranAfter?.organizerNameManual, namaCampuran);
+  const rtCampuranAfter = await db.getRoutineById(rtCampuran.id);
+  assert.equal(
+    rtCampuranAfter?.organizerMajelisId,
+    pemilikAsli.id,
+    "rutin campuran berpindah majelis saat promosi",
+  );
+  assert.equal(rtCampuranAfter?.organizerNameManual, namaCampuran);
+
+  assert.equal(
+    (await db.getEventById(evMurni.id))?.organizerMajelisId,
+    hasil.majelis.id,
+  );
+  assert.equal(
+    (await db.getRoutineById(rtMurni.id))?.organizerMajelisId,
+    hasil.majelis.id,
+  );
+}
+
+// --- 13. Promosi nama yang tidak ada ⇒ Error & tidak membuat profil -------------
+{
+  const namaHantu = "Panitia Tidak Pernah Ada Uji";
+  const sebelum = await db.listPublishedMajelis({});
+  await assert.rejects(
+    db.promoteManualOrganizer(namaHantu, "Kota Bekasi"),
+    /Tidak ada event atau jadwal rutin/,
+  );
+  const sesudah = await db.listPublishedMajelis({});
+  assert.equal(sesudah.length, sebelum.length);
+  assert.ok(!sesudah.some((m) => m.name === namaHantu));
+  assert.equal(
+    (await db.listAdminMajelis({ q: namaHantu })).length,
+    0,
+    "profil hantu terbuat dari promosi nama kosong",
+  );
+}
+
+// --- 14. listPublishedUpcoming menghormati q (dan tidak mencari sourceInfo) ------
+{
+  const unik = await db.createEvent(
+    makeEventInput({
+      title: "Pengajian Bougenville Ceria",
+      startDate: "2026-12-10",
+      endDate: null,
+      sourceInfo: "tokenrahasia-anggrek",
+    }),
+  );
+  const cocok = await db.listPublishedUpcoming({ nowISO: NOW, q: "bougenville" });
+  assert.ok(
+    cocok.some((e) => e.id === unik.id),
+    "q upcoming tidak diterapkan pada judul",
+  );
+  const dariSource = await db.listPublishedUpcoming({
+    nowISO: NOW,
+    q: "tokenrahasia-anggrek",
+  });
+  assert.ok(
+    !dariSource.some((e) => e.id === unik.id),
+    "q upcoming bocor mencari ke sourceInfo",
+  );
+  assert.equal(dariSource.length, 0);
 }
 
 console.log("test-db: OK");

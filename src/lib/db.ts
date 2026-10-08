@@ -715,6 +715,23 @@ function promoteManualOrganizerSqlite(
   city: string,
 ): PromoteResult {
   const db = getSqlite();
+  // Hanya record yang BELUM terhubung yang boleh tertaut & terhitung;
+  // record yang sudah punya majelis tidak boleh berpindah (review Task 4).
+  const countUnlinked = (table: string): number => {
+    const row = db
+      .prepare(
+        `SELECT COUNT(*) AS n FROM ${table}
+         WHERE organizer_majelis_id IS NULL AND organizer_name_manual = ?
+           AND city = ?`,
+      )
+      .get(name, city) as Row;
+    return Number(row.n ?? 0);
+  };
+  if (countUnlinked("events") + countUnlinked("routines") === 0) {
+    throw new Error(
+      `Tidak ada event atau jadwal rutin yang belum terhubung dengan nama penyelenggara "${name}" di ${city}`,
+    );
+  }
   const majelis = createMajelisSqlite({
     name,
     city,
@@ -737,13 +754,15 @@ function promoteManualOrganizerSqlite(
   const ev = db
     .prepare(
       `UPDATE events SET organizer_majelis_id = ?, organizer_name_manual = NULL,
-        updated_at = ? WHERE organizer_name_manual = ? AND city = ?`,
+        updated_at = ? WHERE organizer_majelis_id IS NULL
+          AND organizer_name_manual = ? AND city = ?`,
     )
     .run(majelis.id, ts, name, city);
   const rt = db
     .prepare(
       `UPDATE routines SET organizer_majelis_id = ?, organizer_name_manual = NULL,
-        updated_at = ? WHERE organizer_name_manual = ? AND city = ?`,
+        updated_at = ? WHERE organizer_majelis_id IS NULL
+          AND organizer_name_manual = ? AND city = ?`,
     )
     .run(majelis.id, ts, name, city);
   return {
@@ -800,7 +819,14 @@ function createEventSqlite(input: EventInput): EventRecord {
   const record: EventRecord = {
     ...input,
     id: randomUUID(),
-    slug: resolveSlug(db, "events", input.slug, input.title, "event"),
+    // Basis slug event = slug judul + tanggal mulai (spec §6.2).
+    slug: resolveSlug(
+      db,
+      "events",
+      input.slug,
+      `${slugify(input.title)}-${input.startDate}`,
+      "event",
+    ),
     createdAt: ts,
     updatedAt: ts,
   };
@@ -888,12 +914,55 @@ function matchesEventFilters(
   return true;
 }
 
+/** Pencarian teks upcoming: field yang sama seperti searchPublishedEvents
+ * (judul, penceramah, tempat, kecamatan, deskripsi, nama penyelenggara) —
+ * sourceInfo sengaja TIDAK dicari. */
+export function eventMatchesQuery(
+  e: EventRecord,
+  q: string,
+  organizerName?: string | null,
+): boolean {
+  const haystack = [
+    e.title,
+    e.speakers.join(" "),
+    e.venueName,
+    e.district,
+    e.description ?? "",
+    e.organizerNameManual ?? "",
+    organizerName ?? "",
+  ]
+    .join(" ")
+    .toLowerCase();
+  return haystack.includes(q.toLowerCase());
+}
+
 function listPublishedUpcomingSqlite(filter: UpcomingFilter): EventRecord[] {
   const nowTs = assertValidISODateTime(filter.nowISO);
   const interval = rangeInterval(filter.range ?? "all", nowTs);
+  let majelisNames: Map<string, string> | null = null;
+  if (filter.q) {
+    const db = getSqlite();
+    majelisNames = new Map(
+      (db.prepare("SELECT id, name FROM majelis").all() as Row[]).map((r) => [
+        str(r.id),
+        str(r.name),
+      ]),
+    );
+  }
   return publishedEventRowsSqlite()
     .map((r) => toEvent(r, true))
     .filter((e) => matchesEventFilters(e, filter))
+    .filter(
+      (e) =>
+        !filter.q ||
+        eventMatchesQuery(
+          e,
+          filter.q,
+          e.organizerMajelisId
+            ? (majelisNames?.get(e.organizerMajelisId) ?? null)
+            : null,
+        ),
+    )
     .filter((e) => {
       const end = eventEndTs(e);
       if (end <= nowTs) return false;

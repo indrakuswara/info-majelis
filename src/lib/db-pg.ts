@@ -407,6 +407,22 @@ export async function promoteManualOrganizer(
   name: string,
   city: string,
 ): Promise<PromoteResult> {
+  // Hanya record yang BELUM terhubung yang boleh tertaut & terhitung;
+  // record yang sudah punya majelis tidak boleh berpindah (review Task 4).
+  const countUnlinked = async (table: string): Promise<number> => {
+    const row = await queryOne(
+      `SELECT COUNT(*) AS n FROM ${table}
+       WHERE organizer_majelis_id IS NULL AND organizer_name_manual = $1
+         AND city = $2`,
+      [name, city],
+    );
+    return Number(row?.n ?? 0);
+  };
+  if ((await countUnlinked("events")) + (await countUnlinked("routines")) === 0) {
+    throw new Error(
+      `Tidak ada event atau jadwal rutin yang belum terhubung dengan nama penyelenggara "${name}" di ${city}`,
+    );
+  }
   const majelis = await createMajelis({
     name,
     city,
@@ -428,12 +444,14 @@ export async function promoteManualOrganizer(
   const ts = nowISODateTime();
   const ev = await getPool().query(
     `UPDATE events SET organizer_majelis_id = $1, organizer_name_manual = NULL,
-      updated_at = $2 WHERE organizer_name_manual = $3 AND city = $4`,
+      updated_at = $2 WHERE organizer_majelis_id IS NULL
+        AND organizer_name_manual = $3 AND city = $4`,
     [majelis.id, ts, name, city],
   );
   const rt = await getPool().query(
     `UPDATE routines SET organizer_majelis_id = $1, organizer_name_manual = NULL,
-      updated_at = $2 WHERE organizer_name_manual = $3 AND city = $4`,
+      updated_at = $2 WHERE organizer_majelis_id IS NULL
+        AND organizer_name_manual = $3 AND city = $4`,
     [majelis.id, ts, name, city],
   );
   return {
@@ -470,7 +488,13 @@ export async function createEvent(input: EventInput): Promise<EventRecord> {
   const record: EventRecord = {
     ...input,
     id: randomUUID(),
-    slug: await resolveSlug("events", input.slug, input.title, "event"),
+    // Basis slug event = slug judul + tanggal mulai (spec §6.2).
+    slug: await resolveSlug(
+      "events",
+      input.slug,
+      `${slugify(input.title)}-${input.startDate}`,
+      "event",
+    ),
     createdAt: ts,
     updatedAt: ts,
   };
@@ -566,15 +590,57 @@ function matchesEventFilters(
   return true;
 }
 
+/** Pencarian teks upcoming: field yang sama seperti searchPublishedEvents
+ * (judul, penceramah, tempat, kecamatan, deskripsi, nama penyelenggara) —
+ * sourceInfo sengaja TIDAK dicari. Setara eventMatchesQuery di db.ts. */
+function eventMatchesQuery(
+  e: EventRecord,
+  q: string,
+  organizerName?: string | null,
+): boolean {
+  const haystack = [
+    e.title,
+    e.speakers.join(" "),
+    e.venueName,
+    e.district,
+    e.description ?? "",
+    e.organizerNameManual ?? "",
+    organizerName ?? "",
+  ]
+    .join(" ")
+    .toLowerCase();
+  return haystack.includes(q.toLowerCase());
+}
+
 export async function listPublishedUpcoming(
   filter: UpcomingFilter,
 ): Promise<EventRecord[]> {
   const nowTs = parseISODateTime(filter.nowISO);
   const interval = rangeInterval(filter.range ?? "all", nowTs);
   const rows = await publishedEventRows();
+  let majelisNames: Map<string, string> | null = null;
+  if (filter.q) {
+    majelisNames = new Map(
+      (await query("SELECT id, name FROM majelis")).map((r) => [
+        str(r.id),
+        str(r.name),
+      ]),
+    );
+  }
   return rows
     .map((r) => toEvent(r, true))
     .filter((e) => matchesEventFilters(e, filter))
+    .filter(
+      (e) =>
+        !filter.q ||
+        eventMatchesQuery(
+          e,
+          filter.q,
+          e.organizerMajelisId
+            ? (majelisNames?.get(e.organizerMajelisId) ?? null)
+            : null,
+        ),
+    )
     .filter((e) => {
       const end = eventEndTs(e);
       if (end <= nowTs) return false;
