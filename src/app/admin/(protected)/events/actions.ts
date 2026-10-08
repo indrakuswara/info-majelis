@@ -136,12 +136,20 @@ export async function saveEventAction(
   }
   await ensureSchema();
 
-  // Penyelenggara profil harus merujuk majelis yang ada; picker klien
-  // hanya menawarkan profil terbit, ini penjaga server-nya.
+  // Penyelenggara profil harus merujuk majelis yang ada DAN sudah
+  // terbit; picker klien hanya menawarkan profil terbit, ini penjaga
+  // server-nya untuk payload yang dikirim langsung.
   if (input.organizerMajelisId) {
     const majelis = await getMajelisById(input.organizerMajelisId);
     if (!majelis) {
       return { ok: false, error: "Profil majelis penyelenggara tidak ditemukan." };
+    }
+    if (majelis.status !== "published") {
+      return {
+        ok: false,
+        error:
+          "Profil majelis penyelenggara belum terbit. Pilih majelis yang sudah terbit, atau kosongkan profil dan isi nama penyelenggara secara manual.",
+      };
     }
   }
 
@@ -213,11 +221,14 @@ export async function saveEventAction(
       // Slug lahir dari tanggal penanda? Begitu tanggal asli pertama
       // kali tersimpan pada draft, regenerasi slug lewat repository
       // (slugify judul + tanggal mulai) agar URL publik benar.
+      // Penanda dideteksi dari startDate record lama — BUKAN akhiran
+      // slug — karena slug penanda bisa membawa sufiks unik ("-2",
+      // "-3", …) bila beberapa draft sejudul dibuat tanpa tanggal;
+      // deteksi akhiran slug akan melewatkan kasus bertabrakan itu.
       if (
         existing.status === "draft" &&
         existing.startDate === EVENT_DRAFT_PLACEHOLDER_DATE &&
-        data.startDate !== EVENT_DRAFT_PLACEHOLDER_DATE &&
-        updated.slug.endsWith(`-${EVENT_DRAFT_PLACEHOLDER_DATE}`)
+        data.startDate !== EVENT_DRAFT_PLACEHOLDER_DATE
       ) {
         const regenerated = await updateEvent(input.id, {
           slug: `${data.title}-${data.startDate}`,
