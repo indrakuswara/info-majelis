@@ -9,6 +9,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { SITE_COVERAGE_NOTE } from "../../lib/constants.ts";
+import { ServiceWorkerRegister } from "../pwa/ServiceWorkerRegister.tsx";
 
 const NAV: { href: string; label: string }[] = [
   { href: "/", label: "Beranda" },
@@ -25,6 +26,7 @@ export function SiteChrome({ children }: { children: ReactNode }) {
   }
   return (
     <>
+      <ServiceWorkerRegister />
       <header className="border-b border-neutral-200 bg-white">
         <div className="mx-auto flex w-full max-w-5xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
           <Link href="/" className="text-lg font-bold text-emerald-800">

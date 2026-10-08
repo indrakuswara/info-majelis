@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { SiteChrome } from "../components/public/SiteChrome.tsx";
 import { getSiteUrl } from "../lib/seo.ts";
@@ -26,6 +26,23 @@ export const metadata: Metadata = {
   },
   description:
     "Direktori jadwal maulid, tabligh akbar, kajian, dan acara majelis. Saat ini memuat acara di Bekasi Raya & Jakarta Timur.",
+  // PWA (plan Task 14; spec §12): manifest statis di public/ + ikon kubah.
+  manifest: "/manifest.webmanifest",
+  icons: {
+    icon: [
+      { url: "/icons/icon.svg", type: "image/svg+xml" },
+      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
+  appleWebApp: {
+    capable: true,
+    title: "Info Majelis",
+    statusBarStyle: "default",
+  },
   openGraph: {
     type: "website",
     siteName: "Info Majelis",
@@ -35,6 +52,11 @@ export const metadata: Metadata = {
       "Direktori jadwal maulid, tabligh akbar, kajian, dan acara majelis. Saat ini memuat acara di Bekasi Raya & Jakarta Timur.",
     ...(siteUrl ? { url: siteUrl } : {}),
   },
+};
+
+export const viewport: Viewport = {
+  // Emerald gelap palet situs (spec §12) — selaras theme_color manifest.
+  themeColor: "#064e3b",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
