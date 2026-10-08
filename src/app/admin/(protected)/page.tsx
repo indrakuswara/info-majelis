@@ -139,12 +139,27 @@ export default async function AdminDashboardPage() {
                 className="flex flex-wrap items-center justify-between gap-3 px-5 py-4"
               >
                 <div className="min-w-0">
-                  <p className="truncate font-medium">{event.title}</p>
+                  <p className="truncate font-medium">
+                    <Link
+                      href={`/admin/events/${event.id}`}
+                      className="hover:underline"
+                    >
+                      {event.title}
+                    </Link>
+                  </p>
                   <p className="mt-1 text-sm text-neutral-500">
                     Diubah {formatRelativeTime(event.updatedAt)}
                   </p>
                 </div>
-                <StatusBadge status={event.status} />
+                <div className="flex items-center gap-3">
+                  <Link
+                    href={`/admin/events/${event.id}`}
+                    className="text-sm font-semibold text-emerald-700 hover:underline"
+                  >
+                    Ubah
+                  </Link>
+                  <StatusBadge status={event.status} />
+                </div>
               </li>
             ))}
           </ul>
