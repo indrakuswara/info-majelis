@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
-import { computeOccurrences } from "../src/lib/recurrence.ts";
+import {
+  computeOccurrences,
+  describePattern,
+} from "../src/lib/recurrence.ts";
 import type {
   RoutineExceptionRecord,
   RoutineRecord,
@@ -265,6 +268,41 @@ function dates(occs: ReturnType<typeof computeOccurrences>): string[] {
   );
   // Jumat 9 Okt sebelum effectiveFrom; 30 Okt sesudah effectiveTo.
   assert.deepEqual(dates(occs), ["2026-10-16", "2026-10-23"]);
+}
+
+// --- 11. describePattern: pola dalam bahasa manusia ---------------------------
+// Contoh terkunci: mingguan malam memakai kaidah hari kalender spec §6.3
+// (Kamis malam = "malam Jumat"), bulanan minggu-ke, bulanan tanggal tetap.
+{
+  assert.equal(
+    describePattern(
+      { kind: "weekly", weekday: 4 },
+      { startTime: "19:30" },
+    ),
+    "Setiap Kamis malam Jumat (ba'da Maghrib)",
+  );
+  // Tanpa jam malam: bentuk singkat spec §9.2 ("Setiap Jumat").
+  assert.equal(describePattern({ kind: "weekly", weekday: 5 }), "Setiap Jumat");
+  assert.equal(
+    describePattern({ kind: "weekly", weekday: 5 }, { startTime: "09:00" }),
+    "Setiap Jumat",
+  );
+  assert.equal(
+    describePattern({ kind: "monthly-weekday", weekday: 5, weekOfMonth: 2 }),
+    "Jumat ke-2 setiap bulan",
+  );
+  assert.equal(
+    describePattern({
+      kind: "monthly-weekday",
+      weekday: 5,
+      weekOfMonth: "last",
+    }),
+    "Jumat terakhir setiap bulan",
+  );
+  assert.equal(
+    describePattern({ kind: "monthly-date", dayOfMonth: 15 }),
+    "Tanggal 15 setiap bulan",
+  );
 }
 
 console.log("test-recurrence: OK");

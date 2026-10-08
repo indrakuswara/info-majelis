@@ -22,9 +22,58 @@
 
 import type {
   Occurrence,
+  RecurrencePattern,
   RoutineExceptionRecord,
   RoutineRecord,
 } from "./domain.ts";
+
+/** Nama hari Bahasa Indonesia; indeks mengikuti Weekday (0 = Minggu). */
+export const WEEKDAY_NAMES: string[] = [
+  "Minggu",
+  "Senin",
+  "Selasa",
+  "Rabu",
+  "Kamis",
+  "Jumat",
+  "Sabtu",
+];
+
+/**
+ * Pola pengulangan dalam bahasa manusia (dipakai daftar admin, kartu
+ * publik, dan penjelas form — satu sumber agar tidak ada parafrase
+ * kedua):
+ * - weekly → "Setiap Jumat"; bila jam mulai malam (≥ 18:00 WIB, ba'da
+ *   Maghrib) ditambah sebutan malamnya sesuai kaidah hari kalender
+ *   (spec §6.3): Kamis malam = "malam Jumat", mis. "Setiap Kamis malam
+ *   Jumat (ba'da Maghrib)".
+ * - monthly-date → "Tanggal 15 setiap bulan".
+ * - monthly-weekday → "Jumat ke-2 setiap bulan" / "Jumat terakhir
+ *   setiap bulan".
+ */
+export function describePattern(
+  pattern: RecurrencePattern,
+  opts?: { startTime?: string | null },
+): string {
+  switch (pattern.kind) {
+    case "weekly": {
+      const day = WEEKDAY_NAMES[pattern.weekday] ?? "—";
+      const startTime = opts?.startTime ?? null;
+      if (startTime !== null && startTime >= "18:00") {
+        const nextDay = WEEKDAY_NAMES[(pattern.weekday + 1) % 7];
+        return `Setiap ${day} malam ${nextDay} (ba'da Maghrib)`;
+      }
+      return `Setiap ${day}`;
+    }
+    case "monthly-date":
+      return `Tanggal ${pattern.dayOfMonth} setiap bulan`;
+    case "monthly-weekday": {
+      const day = WEEKDAY_NAMES[pattern.weekday] ?? "—";
+      return pattern.weekOfMonth === "last"
+        ? `${day} terakhir setiap bulan`
+        : `${day} ke-${pattern.weekOfMonth} setiap bulan`;
+    }
+  }
+}
 
 type RoutineInput = Pick<
   RoutineRecord,
