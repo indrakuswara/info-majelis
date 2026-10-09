@@ -9,7 +9,6 @@ import { connection } from "next/server";
 import { EventCard } from "../../components/public/EventCard.tsx";
 import {
   FilterBar,
-  RANGE_OPTIONS,
   type FilterValues,
 } from "../../components/public/FilterBar.tsx";
 import { RailSlot } from "../../components/public/RailSlot.tsx";
@@ -19,7 +18,6 @@ import type { Category } from "../../lib/domain.ts";
 import {
   getDistrictSuggestions,
   getUpcomingFeed,
-  type UpcomingRange,
 } from "../../lib/feed.ts";
 import { wibTodayISODate } from "../../lib/format.ts";
 import { nowWibISO } from "../../lib/utils.ts";
@@ -33,23 +31,39 @@ export const metadata: Metadata = {
 };
 
 interface AcaraSearchParams {
-  range?: string;
+  from?: string;
+  to?: string;
   category?: string;
   city?: string;
   district?: string;
   q?: string;
 }
 
+/** Terima hanya "YYYY-MM-DD" yang merupakan tanggal kalender nyata. */
+function parseDateParam(value: string | undefined): string {
+  const s = (value ?? "").trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return "";
+  const [y, m, d] = s.split("-").map(Number);
+  const dt = new Date(Date.UTC(y ?? 0, (m ?? 1) - 1, d ?? 1));
+  const real =
+    dt.getUTCFullYear() === y &&
+    dt.getUTCMonth() === (m ?? 1) - 1 &&
+    dt.getUTCDate() === d;
+  return real ? s : "";
+}
+
 function parseFilters(params: AcaraSearchParams): FilterValues {
-  const range = RANGE_OPTIONS.some((o) => o.value === params.range)
-    ? (params.range as UpcomingRange)
-    : "all";
+  let from = parseDateParam(params.from);
+  let to = parseDateParam(params.to);
+  // Rentang terbalik ditukar agar tetap bermakna (bukan hasil kosong).
+  if (from !== "" && to !== "" && from > to) [from, to] = [to, from];
   const category = CATEGORIES.some((c) => c.value === params.category)
     ? (params.category ?? "")
     : "";
   const city = REGIONS.includes(params.city ?? "") ? (params.city ?? "") : "";
   return {
-    range,
+    from,
+    to,
     category,
     city,
     district: (params.district ?? "").trim(),
@@ -58,7 +72,7 @@ function parseFilters(params: AcaraSearchParams): FilterValues {
 }
 
 const hasFilter = (v: FilterValues): boolean =>
-  v.range !== "all" || v.category !== "" || v.city !== "" ||
+  v.from !== "" || v.to !== "" || v.category !== "" || v.city !== "" ||
   v.district !== "" || v.q !== "";
 
 export default async function AcaraPage({
@@ -74,7 +88,8 @@ export default async function AcaraPage({
   const today = wibTodayISODate();
   const [feed, districts] = await Promise.all([
     getUpcomingFeed(nowISO, {
-      range: values.range,
+      from: values.from === "" ? undefined : values.from,
+      to: values.to === "" ? undefined : values.to,
       city: values.city === "" ? undefined : values.city,
       district: values.district === "" ? undefined : values.district,
       category: values.category === "" ? undefined : (values.category as Category),

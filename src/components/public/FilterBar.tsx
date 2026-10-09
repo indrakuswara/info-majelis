@@ -11,22 +11,16 @@
 // dasar token Serambi di atas kertas.
 
 import { CATEGORIES, REGIONS } from "../../lib/constants.ts";
-import type { UpcomingRange } from "../../lib/feed.ts";
 
 export interface FilterValues {
-  range: UpcomingRange;
+  /** Batas tanggal eksplisit "YYYY-MM-DD"; "" = tanpa batas. */
+  from: string;
+  to: string;
   category: string;
   city: string;
   district: string;
   q: string;
 }
-
-export const RANGE_OPTIONS: { value: UpcomingRange; label: string }[] = [
-  { value: "all", label: "Semua" },
-  { value: "today", label: "Hari Ini" },
-  { value: "week", label: "Minggu Ini" },
-  { value: "weekend", label: "Akhir Pekan" },
-];
 
 const inputClass =
   "w-full rounded-[2px] border border-line bg-paper px-2.5 py-2 text-sm text-ink placeholder:text-muted/60 focus:border-em focus:outline-none";
@@ -67,28 +61,40 @@ export function FilterBar({
           />
         </div>
 
+        <fieldset>
+          <legend className={labelClass}>Rentang tanggal</legend>
+          <div className="mt-2 grid gap-3 sm:grid-cols-2">
+            <div>
+              <label htmlFor="filter-from" className={labelClass}>
+                Dari tanggal
+              </label>
+              <input
+                id="filter-from"
+                type="date"
+                name="from"
+                defaultValue={values.from}
+                className={`${inputClass} min-w-0`}
+              />
+            </div>
+            <div>
+              <label htmlFor="filter-to" className={labelClass}>
+                Sampai tanggal
+              </label>
+              <input
+                id="filter-to"
+                type="date"
+                name="to"
+                defaultValue={values.to}
+                className={`${inputClass} min-w-0`}
+              />
+            </div>
+          </div>
+        </fieldset>
+
         {/* Label chip WAJIB relative: input radio sr-only di dalamnya
             position:absolute — tanpa labuh ke label, containing
             block-nya lolos keluar form gulir dan posisi statisnya yang
             jauh menyumbang overflow horizontal ke seluruh halaman. */}
-        <fieldset>
-          <legend className={labelClass}>Rentang tanggal</legend>
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            {RANGE_OPTIONS.map((opt) => (
-              <label key={opt.value} className="relative cursor-pointer">
-                <input
-                  type="radio"
-                  name="range"
-                  value={opt.value}
-                  defaultChecked={values.range === opt.value}
-                  className="peer sr-only"
-                />
-                <span className={chipClass}>{opt.label}</span>
-              </label>
-            ))}
-          </div>
-        </fieldset>
-
         <fieldset>
           <legend className={labelClass}>Kategori</legend>
           <div className="mt-2 flex flex-wrap gap-1.5">

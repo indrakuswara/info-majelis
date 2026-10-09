@@ -66,6 +66,15 @@ export interface FeedItem {
 
 export interface FeedFilter {
   range?: UpcomingRange;
+  /**
+   * Batas tanggal eksplisit "YYYY-MM-DD" dari pemilih Dari–Sampai.
+   * Bila salah satu terisi, ia menggantikan interval `range`: awal =
+   * `from` pukul 00:00 dinding WIB (atau hari ini bila `from` kosong),
+   * akhir = `to` pukul 23:59:59 (atau tanpa batas bila `to` kosong —
+   * kemunculan rutin tetap dibatasi horizonDays).
+   */
+  from?: string;
+  to?: string;
   city?: string;
   district?: string;
   category?: Category;
@@ -92,6 +101,23 @@ function wallTs(dateStr: string, timeStr: string): number {
 /** Cap waktu dari ISO dinding WIB "YYYY-MM-DDTHH:mm:ss+07:00". */
 function isoWallTs(iso: string): number {
   return wallTs(iso.slice(0, 10), iso.slice(11, 16));
+}
+
+/**
+ * Interval [mulai, akhir) dari batas tanggal eksplisit from/to —
+ * menganut konvensi cap dinding WIB yang sama seperti rangeInterval
+ * di db.ts. Null bila keduanya kosong (pemanggil memakai `range`).
+ */
+function explicitDateInterval(
+  from: string | undefined,
+  to: string | undefined,
+  today: string,
+): { start: number; end: number } | null {
+  if (!from && !to) return null;
+  return {
+    start: wallTs(from || today, "00:00"),
+    end: to ? wallTs(to, "00:00") + DAY_MS : Number.POSITIVE_INFINITY,
+  };
 }
 
 export function resolveOrganizer(
@@ -201,7 +227,10 @@ export async function getUpcomingFeed(
   const today = wibTodayISODate(new Date(nowISO));
   const horizonDate = addDaysISODate(today, horizonDays);
   const nowTs = isoWallTs(nowISO);
-  const interval = rangeInterval(range, nowTs);
+  // Batas tanggal eksplisit (pemilih Dari–Sampai) menggantikan interval
+  // range; tanpa keduanya, perilaku persis seperti jalur range lama.
+  const dateInterval = explicitDateInterval(filter.from, filter.to, today);
+  const interval = dateInterval ?? rangeInterval(range, nowTs);
 
   const majelisList = await listPublishedMajelis({});
   const majelisById = new Map(majelisList.map((m) => [m.id, m]));
@@ -218,6 +247,13 @@ export async function getUpcomingFeed(
   const items: FeedItem[] = [];
   for (const e of events) {
     if (filter.capEvents && e.startDate > horizonDate) continue;
+    // Repository hanya menyaring menurut `range`; batas tanggal
+    // eksplisit diterapkan di sini dengan uji tumpang-tindih yang sama.
+    if (dateInterval) {
+      const start = eventStartTs(e);
+      const end = eventEndTs(e);
+      if (!(start < dateInterval.end && end > dateInterval.start)) continue;
+    }
     items.push(eventToFeedItem(e, majelisById, nowTs));
   }
 

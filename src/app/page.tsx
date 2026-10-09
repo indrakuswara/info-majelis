@@ -78,7 +78,7 @@ export default async function HomePage() {
       <RailSlot>
         <FilterBar
           action="/acara"
-          values={{ range: "all", category: "", city: "", district: "", q: "" }}
+          values={{ from: "", to: "", category: "", city: "", district: "", q: "" }}
           districts={districts}
         />
       </RailSlot>
