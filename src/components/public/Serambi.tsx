@@ -39,7 +39,7 @@ function QuoteText({ onDark }: { onDark?: boolean }) {
   return (
     <>
       <span className={onDark ? "italic text-goldsoft" : "italic text-em"}>
-        &ldquo;Barangsiapa menempuh jalan untuk mencari ilmu&hellip;&rdquo;
+        &quot;Barangsiapa menempuh jalan untuk mencari ilmu…&quot;
       </span>{" "}
       — dibagikan untuk jamaah, gratis.
     </>
@@ -101,8 +101,10 @@ export function Serambi({
         </div>
       </header>
 
-      {/* Wadah slot konteks untuk mobile (diisi RailSlot lewat portal). */}
-      <div id="bar-slot" className="slot-bar lg:hidden" />
+      {/* Wadah slot konteks untuk mobile (diisi RailSlot lewat portal).
+          Saat kosong wadah hilang total agar tidak menyisakan ruang/
+          garis hantu; kelas empty: gugur sendiri begitu portal terisi. */}
+      <div id="bar-slot" className="slot-bar empty:hidden lg:hidden" />
 
       {/* Rail desktop (≥1024px): sticky setinggi layar, gulir internal. */}
       <aside className="relative hidden w-[300px] shrink-0 bg-em text-ivory lg:sticky lg:top-0 lg:flex lg:h-screen lg:flex-col lg:overflow-y-auto">
@@ -141,8 +143,11 @@ export function Serambi({
             })}
           </nav>
 
-          {/* Wadah slot konteks desktop (diisi RailSlot lewat portal). */}
-          <div id="rail-slot" className="slot-rail mt-7 border-t border-ivory/15 pt-5" />
+          {/* Wadah slot konteks desktop (diisi RailSlot lewat portal).
+              Garis & jarak atas hanya berlaku saat terisi — empty:
+              menyembunyikan wadah kosong, dan gugur begitu portal
+              memasukkan isinya. */}
+          <div id="rail-slot" className="slot-rail mt-7 border-t border-ivory/15 pt-5 empty:hidden" />
 
           <div className="mt-auto pt-8">
             <p className="border-t border-goldsoft/40 py-5 text-[12.5px] leading-relaxed text-[#dfe7da]">
