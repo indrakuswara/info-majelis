@@ -30,8 +30,6 @@ const inputClass =
   "w-full rounded-[2px] border border-line bg-paper px-2.5 py-2 text-sm text-ink placeholder:text-muted/60 focus:border-em focus:outline-none";
 const labelClass =
   "block text-[11px] font-bold uppercase tracking-[0.12em] text-muted";
-const chipClass =
-  "inline-block rounded-[2px] border border-line bg-ivory px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-muted peer-checked:border-em peer-checked:bg-em peer-checked:font-bold peer-checked:text-paper";
 
 export function FilterBar({
   action,
@@ -117,37 +115,28 @@ export function FilterBar({
           </div>
         </fieldset>
 
-        {/* Label chip WAJIB relative: input radio sr-only di dalamnya
-            position:absolute — tanpa labuh ke label, containing
-            block-nya lolos keluar form gulir dan posisi statisnya yang
-            jauh menyumbang overflow horizontal ke seluruh halaman. */}
-        <fieldset>
-          <legend className={labelClass}>Kategori</legend>
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            <label className="relative cursor-pointer">
-              <input
-                type="radio"
-                name="category"
-                value=""
-                defaultChecked={values.category === ""}
-                className="peer sr-only"
-              />
-              <span className={chipClass}>Semua Kategori</span>
-            </label>
+        {/* Kategori berupa <select> (keputusan Juple 2026-10-09):
+            chip radio 9 biji terlalu makan tempat terutama di bar
+            mobile; dropdown sejajar dengan pemilih kota. Nilai yang
+            dikirim identik dengan era chip ("" = semua kategori). */}
+        <div>
+          <label htmlFor="filter-category" className={labelClass}>
+            Kategori
+          </label>
+          <select
+            id="filter-category"
+            name="category"
+            defaultValue={values.category}
+            className={inputClass}
+          >
+            <option value="">Semua kategori</option>
             {CATEGORIES.map((c) => (
-              <label key={c.value} className="relative cursor-pointer">
-                <input
-                  type="radio"
-                  name="category"
-                  value={c.value}
-                  defaultChecked={values.category === c.value}
-                  className="peer sr-only"
-                />
-                <span className={chipClass}>{c.label}</span>
-              </label>
+              <option key={c.value} value={c.value}>
+                {c.label}
+              </option>
             ))}
-          </div>
-        </fieldset>
+          </select>
+        </div>
 
         <div>
           <label htmlFor="filter-city" className={labelClass}>
