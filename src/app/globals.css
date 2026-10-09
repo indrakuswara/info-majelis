@@ -121,6 +121,71 @@
   padding: 0 1rem 0.75rem;
 }
 
+/* Konteks slot untuk form GET lokal halaman daftar (plan redesign
+   Task 4): form filter Jadwal, pencarian Majelis, dan filter Arsip
+   berbagi kelas akar .pageform dan mengikuti pola yang sama seperti
+   .filterbar — satu instance, perbedaan antar-wadah dari sini saja. */
+
+/* Rail desktop: bertumpuk satu kolom, teks terang di atas zamrud. */
+.slot-rail .pageform label {
+  color: var(--color-goldsoft);
+}
+.slot-rail .pageform input,
+.slot-rail .pageform select {
+  background: rgb(255 255 255 / 0.05);
+  border-color: rgb(250 246 236 / 0.3);
+  color: var(--color-ivory);
+}
+.slot-rail .pageform input::placeholder {
+  color: rgb(250 246 236 / 0.45);
+}
+.slot-rail .pageform option {
+  background: var(--color-paper);
+  color: var(--color-ink);
+}
+.slot-rail .pageform .grid {
+  grid-template-columns: 1fr;
+}
+.slot-rail .pageform button[type="submit"] {
+  background: var(--color-goldsoft);
+  color: var(--color-em);
+}
+.slot-rail .pageform button[type="submit"]:hover {
+  background: var(--color-ivory);
+}
+.slot-rail .pageform a {
+  border-color: var(--color-goldsoft);
+  color: var(--color-goldsoft);
+}
+.slot-rail .pageform a:hover {
+  background: rgb(255 255 255 / 0.07);
+}
+.slot-rail .pageform-count {
+  color: #b9cabb;
+}
+
+/* Bar mobile: baris gulir horizontal ringkas di atas kertas. */
+.slot-bar .pageform {
+  flex-direction: row;
+  align-items: flex-end;
+  gap: 0.75rem;
+  overflow-x: auto;
+  padding: 0.75rem 1rem;
+}
+.slot-bar .pageform > * {
+  flex: 0 0 auto;
+}
+.slot-bar .pageform .grid {
+  display: flex;
+  gap: 0.75rem;
+}
+.slot-bar .pageform .grid > div {
+  width: 176px;
+}
+.slot-bar .pageform-actions {
+  flex-wrap: nowrap;
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;

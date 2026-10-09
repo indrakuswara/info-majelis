@@ -3,10 +3,16 @@
 // dikelompokkan Senin sampai Minggu. Hari untuk pola tanggal bulanan
 // mengikuti hari kemunculan berikutnya karena tanggalnya berpindah
 // hari dari bulan ke bulan.
+//
+// Presentasi Serambi (plan redesign Task 4): form filter adalah form
+// GET lokal berkelas akar `pageform`, dibungkus RailSlot agar tampil
+// di rail desktop / bar mobile; daftar pola berupa baris bersih
+// berbatas token `line` dengan tanggal & judul serif Fraunces.
 
 import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
+import { RailSlot } from "../../components/public/RailSlot.tsx";
 import { CATEGORIES, CATEGORY_STYLES, REGIONS, categoryLabel } from "../../lib/constants.ts";
 import {
   ensureSchema,
@@ -51,9 +57,9 @@ interface RoutineListItem {
 
 const GROUP_ORDER = [1, 2, 3, 4, 5, 6, 0];
 const inputClass =
-  "w-full rounded-none border-0 border-b border-neutral-400 bg-transparent px-0 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-900 focus:outline-none";
+  "w-full rounded-[2px] border border-line bg-paper px-2.5 py-2 text-sm text-ink placeholder:text-muted/60 focus:border-em focus:outline-none";
 const labelClass =
-  "block text-[11px] font-bold uppercase tracking-[0.12em] text-neutral-500";
+  "block text-[11px] font-bold uppercase tracking-[0.12em] text-muted";
 
 function weekdayOfDate(date: string): number {
   const [y, m, d] = date.split("-").map(Number);
@@ -81,18 +87,18 @@ function RoutineCard({ item }: { item: RoutineListItem }) {
       <div className="w-14 flex-none text-right">
         {next ? (
           <>
-            <div className="text-2xl font-extrabold leading-none tabular-nums text-neutral-900">
+            <div className="font-display text-[28px] font-semibold leading-none tabular-nums text-em">
               {String(Number(next.date.slice(8, 10)))}
             </div>
-            <div className="mt-1 text-[11px] font-semibold uppercase tracking-wide text-neutral-500">
+            <div className="mt-1 text-[11px] font-semibold uppercase tracking-wide text-muted">
               {formatTanggal(next.date).split(" ").slice(2).join(" ")}
             </div>
-            <div className="mt-1 text-xs font-bold tabular-nums text-neutral-700">
+            <div className="mt-1 text-xs font-bold tabular-nums text-ink">
               {next.startTime}
             </div>
           </>
         ) : (
-          <div className="text-2xl font-extrabold leading-none text-neutral-400">
+          <div className="font-display text-[28px] font-semibold leading-none text-muted">
             –
           </div>
         )}
@@ -107,48 +113,50 @@ function RoutineCard({ item }: { item: RoutineListItem }) {
             />
             {categoryLabel(routine.category)}
           </span>
-          <span className="border border-neutral-400 px-1 py-px text-neutral-600">
+          <span className="rounded-[2px] border border-line px-1.5 py-px text-muted">
             Rutin
           </span>
           {next?.exceptionKind === "edisi-spesial" ? (
-            <span className="text-amber-700">Berikutnya Edisi Spesial</span>
+            <span className="rounded-[2px] border border-gold bg-[#f7ecd2] px-1.5 py-px text-[#8a6410]">
+              Berikutnya Edisi Spesial
+            </span>
           ) : null}
         </div>
-        <h3 className="mt-1.5 text-base font-bold leading-snug text-neutral-900">
+        <h3 className="mt-1.5 font-display text-lg font-semibold leading-snug text-ink">
           <Link href={href} className="hover:underline">
             {routine.title}
           </Link>
         </h3>
-        <p className="mt-1 text-sm font-medium text-neutral-800">
+        <p className="mt-1 text-sm font-medium text-ink">
           {describePattern(routine.pattern, {
             startTime: routine.startTime,
           })}{" "}
           · {formatJamRange(routine.startTime, routine.endTime)}
         </p>
         {next ? (
-          <p className="mt-1 text-sm text-neutral-600">
+          <p className="mt-1 text-sm text-muted">
             Berikutnya: {formatTanggal(next.date)},{" "}
             {formatJamRange(next.startTime, routine.endTime)}
           </p>
         ) : (
-          <p className="mt-1 text-sm font-medium text-amber-800">
+          <p className="mt-1 text-sm font-medium text-[#8a6410]">
             Belum ada jadwal berikutnya yang terkonfirmasi
           </p>
         )}
-        <p className="mt-1 text-sm text-neutral-700">
-          <span className="font-medium text-neutral-900">
+        <p className="mt-1 text-sm text-muted">
+          <span className="font-medium text-ink">
             {next?.venueName ?? routine.venueName}
           </span>{" "}
           — {routine.district}, {routine.city}
         </p>
         {item.organizerName ? (
-          <p className="mt-1 text-sm text-neutral-500">
+          <p className="mt-1 text-sm text-muted">
             Penyelenggara: {item.organizerName}
           </p>
         ) : null}
         <Link
           href={href}
-          className="mt-2 inline-block text-sm font-semibold text-emerald-800 underline underline-offset-4"
+          className="mt-2 inline-block text-sm font-semibold text-em underline underline-offset-4 hover:text-em2"
         >
           Lihat detail rutin
         </Link>
@@ -159,7 +167,7 @@ function RoutineCard({ item }: { item: RoutineListItem }) {
         <img
           src={routine.posterUrl}
           alt={`Poster ${routine.title}`}
-          className="h-28 w-20 flex-none self-start rounded-[2px] object-cover sm:h-32 sm:w-24"
+          className="h-28 w-20 flex-none self-start rounded-[2px] border border-line object-cover sm:h-32 sm:w-24"
           loading="lazy"
         />
       ) : null}
@@ -233,20 +241,26 @@ export default async function JadwalPage({
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="border-b-2 border-neutral-900 pb-4">
-        <h1 className="text-2xl font-extrabold tracking-tight text-neutral-950">
+      <div className="border-b border-line pb-4">
+        <p className="text-xs font-bold uppercase tracking-[0.2em] text-gold">
+          Jadwal Berkala
+        </p>
+        <h1 className="mt-1 font-display text-3xl font-semibold text-ink">
           Jadwal Rutin
         </h1>
-        <p className="mt-1 max-w-prose text-sm leading-relaxed text-neutral-600">
+        <p className="mt-2 max-w-prose text-sm leading-relaxed text-muted">
           Semua jadwal rutin yang terbit dan aktif, dikelompokkan
           berdasarkan hari kemunculannya.
         </p>
       </div>
 
+      {/* Filter tinggal di rail desktop / bar mobile lewat RailSlot;
+          posisi di sini adalah fallback aliran konten tanpa JS. */}
+      <RailSlot>
       <form
         method="get"
         action="/jadwal"
-        className="border-b border-[#e3e0d5] border-t-[3px] border-t-neutral-900 py-4"
+        className="pageform flex flex-col gap-4"
       >
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <div>
@@ -312,31 +326,32 @@ export default async function JadwalPage({
             </select>
           </div>
         </div>
-        <div className="mt-4 flex flex-wrap items-center gap-2">
+        <div className="pageform-actions flex flex-wrap items-center gap-2">
           <button
             type="submit"
-            className="rounded-none bg-neutral-900 px-5 py-2 text-xs font-bold uppercase tracking-wider text-white hover:bg-neutral-700"
+            className="rounded-[2px] bg-em px-5 py-2 text-xs font-bold uppercase tracking-wider text-paper hover:bg-em2"
           >
             Terapkan Filter
           </button>
           <a
             href="/jadwal"
-            className="rounded-none border border-neutral-900 px-5 py-2 text-xs font-bold uppercase tracking-wider text-neutral-900 hover:bg-neutral-100"
+            className="rounded-[2px] border border-em px-5 py-2 text-xs font-bold uppercase tracking-wider text-em hover:bg-ivory"
           >
             Atur Ulang
           </a>
-          <span className="text-sm text-neutral-600" role="status">
+          <span className="pageform-count text-sm text-muted" role="status">
             Menampilkan {items.length} jadwal rutin
           </span>
         </div>
       </form>
+      </RailSlot>
 
       {items.length === 0 ? (
-        <section className="border border-dashed border-neutral-400 px-5 py-10 text-center">
-          <h2 className="text-lg font-bold text-neutral-900">
+        <section className="border border-dashed border-line px-5 py-10 text-center">
+          <h2 className="font-display text-lg font-semibold text-ink">
             Tidak ada jadwal rutin yang cocok
           </h2>
-          <p className="mx-auto mt-2 max-w-prose text-sm text-neutral-600">
+          <p className="mx-auto mt-2 max-w-prose text-sm text-muted">
             {hasFilter
               ? "Belum ada jadwal rutin terbit dan aktif yang cocok dengan filter di atas."
               : "Belum ada jadwal rutin terbit dan aktif saat ini."}
@@ -349,15 +364,15 @@ export default async function JadwalPage({
             if (!group || group.length === 0) return null;
             return (
               <section key={day} aria-label={`Jadwal hari ${WEEKDAY_NAMES[day]}`}>
-                <div className="flex items-baseline justify-between gap-2 border-b-2 border-neutral-900 pb-1.5">
-                  <h2 className="text-sm font-extrabold uppercase tracking-[0.12em] text-neutral-950">
+                <div className="flex items-baseline justify-between gap-2 border-b border-line pb-1.5">
+                  <h2 className="font-display text-lg font-semibold text-em">
                     {WEEKDAY_NAMES[day]}
                   </h2>
-                  <span className="text-sm text-neutral-500">
+                  <span className="text-sm text-muted">
                     {group.length} jadwal
                   </span>
                 </div>
-                <div className="divide-y divide-[#e3e0d5]">
+                <div className="divide-y divide-line">
                   {group.map((item) => (
                     <RoutineCard key={item.routine.id} item={item} />
                   ))}
@@ -367,15 +382,15 @@ export default async function JadwalPage({
           })}
           {grouped.get(null)?.length ? (
             <section aria-label="Jadwal tanpa hari tetap">
-              <div className="flex items-baseline justify-between gap-2 border-b-2 border-neutral-900 pb-1.5">
-                <h2 className="text-sm font-extrabold uppercase tracking-[0.12em] text-neutral-950">
+              <div className="flex items-baseline justify-between gap-2 border-b border-line pb-1.5">
+                <h2 className="font-display text-lg font-semibold text-em">
                   Belum Ada Hari Kemunculan Berikutnya
                 </h2>
-                <span className="text-sm text-neutral-500">
+                <span className="text-sm text-muted">
                   {grouped.get(null)?.length} jadwal
                 </span>
               </div>
-              <div className="divide-y divide-[#e3e0d5]">
+              <div className="divide-y divide-line">
                 {grouped.get(null)?.map((item) => (
                   <RoutineCard key={item.routine.id} item={item} />
                 ))}

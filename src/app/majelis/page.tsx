@@ -2,10 +2,16 @@
 // terbit, dapat difilter per kota/kabupaten. Jumlah acara akan datang
 // dihitung dari event terbit mendatang + satu kemunculan berikutnya
 // untuk setiap jadwal rutin terbit dan aktif milik majelis tersebut.
+//
+// Presentasi Serambi (plan redesign Task 4): form filter kota adalah
+// form GET lokal berkelas akar `pageform`, dibungkus RailSlot agar
+// tampil di rail desktop / bar mobile; direktori menjadi grid kartu
+// profil 2 kolom di desktop.
 
 import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
+import { RailSlot } from "../../components/public/RailSlot.tsx";
 import { REGIONS } from "../../lib/constants.ts";
 import {
   ensureSchema,
@@ -35,50 +41,50 @@ function MajelisCard({
   const imageUrl = majelis.logoUrl ?? majelis.photoUrl;
   const href = `/majelis/${majelis.slug}`;
   return (
-    <article className="flex gap-4 py-5">
+    <article className="flex gap-4 border border-line bg-ivory p-5">
       {imageUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={imageUrl}
           alt={`Logo atau foto ${majelis.name}`}
-          className="h-16 w-16 shrink-0 rounded-[2px] object-cover"
+          className="h-16 w-16 shrink-0 rounded-[2px] border border-line object-cover"
           loading="lazy"
         />
       ) : (
         <div
           aria-hidden="true"
-          className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[2px] bg-neutral-900 text-2xl font-extrabold text-white"
+          className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[2px] bg-em font-display text-2xl font-semibold text-paper"
         >
           {majelis.name.trim().charAt(0).toUpperCase() || "M"}
         </div>
       )}
       <div className="min-w-0 flex-1">
-        <h2 className="text-lg font-bold leading-snug text-neutral-950">
+        <h2 className="font-display text-xl font-semibold leading-snug text-ink">
           <Link href={href} className="hover:underline">
             {majelis.name}
           </Link>
         </h2>
         {majelis.leader ? (
-          <p className="mt-0.5 text-sm text-neutral-600">
+          <p className="mt-0.5 text-sm text-muted">
             Pimpinan: {majelis.leader}
           </p>
         ) : null}
-        <p className="mt-0.5 text-sm text-neutral-600">
+        <p className="mt-0.5 text-sm text-muted">
           {majelis.baseDistrict ? `${majelis.baseDistrict}, ` : ""}
           {majelis.city}
         </p>
         {majelis.description ? (
-          <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-neutral-700">
+          <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-ink">
             {majelis.description}
           </p>
         ) : null}
         <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-          <span className="text-xs font-bold uppercase tracking-[0.08em] text-neutral-700">
+          <span className="text-xs font-bold uppercase tracking-[0.08em] text-muted">
             {upcomingCount} acara akan datang
           </span>
           <Link
             href={href}
-            className="text-sm font-semibold text-emerald-800 underline underline-offset-4"
+            className="text-sm font-semibold text-em underline underline-offset-4 hover:text-em2"
           >
             Lihat profil
           </Link>
@@ -128,70 +134,81 @@ export default async function MajelisDirectoryPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="border-b-2 border-neutral-900 pb-4">
-        <h1 className="text-2xl font-extrabold tracking-tight text-neutral-950">
+      <div className="border-b border-line pb-4">
+        <p className="text-xs font-bold uppercase tracking-[0.2em] text-gold">
+          Direktori
+        </p>
+        <h1 className="mt-1 font-display text-3xl font-semibold text-ink">
           Direktori Majelis
         </h1>
-        <p className="mt-1 max-w-prose text-sm leading-relaxed text-neutral-600">
+        <p className="mt-2 max-w-prose text-sm leading-relaxed text-muted">
           Profil majelis yang sudah terbit beserta acara dan jadwal
           rutin yang mereka selenggarakan.
         </p>
       </div>
 
+      {/* Filter tinggal di rail desktop / bar mobile lewat RailSlot;
+          posisi di sini adalah fallback aliran konten tanpa JS. */}
+      <RailSlot>
       <form
         method="get"
         action="/majelis"
-        className="border-b border-[#e3e0d5] border-t-[3px] border-t-neutral-900 py-4"
+        className="pageform flex flex-col gap-4"
       >
-        <label
-          htmlFor="majelis-city"
-          className="block text-[11px] font-bold uppercase tracking-[0.12em] text-neutral-500"
-        >
-          Kota/Kabupaten
-        </label>
-        <div className="mt-1 flex flex-wrap items-end gap-2">
-          <select
-            id="majelis-city"
-            name="city"
-            defaultValue={city}
-            className="min-w-56 flex-1 rounded-none border-0 border-b border-neutral-400 bg-transparent px-0 py-2 text-sm text-neutral-900 focus:border-neutral-900 focus:outline-none"
-          >
-            <option value="">Semua kota/kabupaten</option>
-            {REGIONS.map((region) => (
-              <option key={region} value={region}>
-                {region}
-              </option>
-            ))}
-          </select>
+        <div className="grid gap-3">
+          <div>
+            <label
+              htmlFor="majelis-city"
+              className="block text-[11px] font-bold uppercase tracking-[0.12em] text-muted"
+            >
+              Kota/Kabupaten
+            </label>
+            <select
+              id="majelis-city"
+              name="city"
+              defaultValue={city}
+              className="w-full rounded-[2px] border border-line bg-paper px-2.5 py-2 text-sm text-ink focus:border-em focus:outline-none"
+            >
+              <option value="">Semua kota/kabupaten</option>
+              {REGIONS.map((region) => (
+                <option key={region} value={region}>
+                  {region}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+        <div className="pageform-actions flex flex-wrap items-center gap-2">
           <button
             type="submit"
-            className="rounded-none bg-neutral-900 px-5 py-2 text-xs font-bold uppercase tracking-wider text-white hover:bg-neutral-700"
+            className="rounded-[2px] bg-em px-5 py-2 text-xs font-bold uppercase tracking-wider text-paper hover:bg-em2"
           >
             Terapkan
           </button>
           <Link
             href="/majelis"
-            className="rounded-none border border-neutral-900 px-5 py-2 text-xs font-bold uppercase tracking-wider text-neutral-900 hover:bg-neutral-100"
+            className="rounded-[2px] border border-em px-5 py-2 text-xs font-bold uppercase tracking-wider text-em hover:bg-ivory"
           >
             Atur Ulang
           </Link>
+          <span className="pageform-count text-sm text-muted" role="status">
+            Menampilkan {majelisList.length} majelis
+          </span>
         </div>
-        <p className="mt-3 text-sm text-neutral-600" role="status">
-          Menampilkan {majelisList.length} majelis
-        </p>
       </form>
+      </RailSlot>
 
       {majelisList.length === 0 ? (
-        <section className="border border-dashed border-neutral-400 px-5 py-10 text-center">
-          <h2 className="text-lg font-bold text-neutral-900">
+        <section className="border border-dashed border-line px-5 py-10 text-center">
+          <h2 className="font-display text-lg font-semibold text-ink">
             Belum ada majelis yang cocok
           </h2>
-          <p className="mx-auto mt-2 max-w-prose text-sm text-neutral-600">
+          <p className="mx-auto mt-2 max-w-prose text-sm text-muted">
             Belum ada profil majelis terbit untuk filter kota ini.
           </p>
         </section>
       ) : (
-        <div className="divide-y divide-[#e3e0d5]">
+        <div className="grid gap-5 lg:grid-cols-2">
           {majelisList.map((majelis) => (
             <MajelisCard
               key={majelis.id}
