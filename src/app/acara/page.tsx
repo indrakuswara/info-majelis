@@ -12,6 +12,7 @@ import {
   RANGE_OPTIONS,
   type FilterValues,
 } from "../../components/public/FilterBar.tsx";
+import { RailSlot } from "../../components/public/RailSlot.tsx";
 import { CATEGORIES, REGIONS } from "../../lib/constants.ts";
 import { ensureSchema } from "../../lib/db.ts";
 import type { Category } from "../../lib/domain.ts";
@@ -94,12 +95,16 @@ export default async function AcaraPage({
         </p>
       </div>
 
-      <FilterBar
-        action="/acara"
-        values={values}
-        districts={districts}
-        resultCount={feed.length}
-      />
+      {/* Filter tinggal di rail desktop / bar mobile lewat RailSlot;
+          posisi di sini adalah fallback aliran konten tanpa JS. */}
+      <RailSlot>
+        <FilterBar
+          action="/acara"
+          values={values}
+          districts={districts}
+          resultCount={feed.length}
+        />
+      </RailSlot>
 
       {feed.length === 0 ? (
         <section className="border border-dashed border-neutral-400 px-5 py-10 text-center">

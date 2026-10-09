@@ -7,6 +7,7 @@ import Link from "next/link";
 import { connection } from "next/server";
 import { EventCard } from "../components/public/EventCard.tsx";
 import { FilterBar } from "../components/public/FilterBar.tsx";
+import { RailSlot } from "../components/public/RailSlot.tsx";
 import { SITE_COVERAGE_NOTE } from "../lib/constants.ts";
 import { ensureSchema } from "../lib/db.ts";
 import { getDistrictSuggestions, getUpcomingFeed, type FeedItem } from "../lib/feed.ts";
@@ -67,11 +68,15 @@ export default async function HomePage() {
         </p>
       </section>
 
-      <FilterBar
-        action="/acara"
-        values={{ range: "all", category: "", city: "", district: "", q: "" }}
-        districts={districts}
-      />
+      {/* Filter tinggal di rail desktop / bar mobile lewat RailSlot;
+          posisi di sini adalah fallback aliran konten tanpa JS. */}
+      <RailSlot>
+        <FilterBar
+          action="/acara"
+          values={{ range: "all", category: "", city: "", district: "", q: "" }}
+          districts={districts}
+        />
+      </RailSlot>
 
       {feed.length === 0 ? (
         <section className="border border-dashed border-neutral-400 px-5 py-10 text-center">

@@ -36,6 +36,91 @@
   outline-offset: 2px;
 }
 
+/* Konteks slot Serambi (plan redesign Task 3): SATU instance FilterBar
+   yang sama (kelas akar .filterbar) tampil menurut wadahnya, dan
+   perbedaan layout diatur seluruhnya dari sini — markup form tidak
+   berubah antar-wadah. Selektor turunan .slot-rail/.slot-bar sengaja
+   lebih spesifik daripada utilitas Tailwind pada elemen form. */
+
+/* Rail desktop: bertumpuk satu kolom, teks terang di atas zamrud,
+   bidang tembus terang dengan tepi ivory tipis. */
+.slot-rail .filterbar label,
+.slot-rail .filterbar legend {
+  color: var(--color-goldsoft);
+}
+.slot-rail .filterbar input,
+.slot-rail .filterbar select {
+  background: rgb(255 255 255 / 0.05);
+  border-color: rgb(250 246 236 / 0.3);
+  color: var(--color-ivory);
+}
+.slot-rail .filterbar input::placeholder {
+  color: rgb(250 246 236 / 0.45);
+}
+.slot-rail .filterbar option {
+  background: var(--color-paper);
+  color: var(--color-ink);
+}
+.slot-rail .filterbar .grid {
+  grid-template-columns: 1fr;
+}
+.slot-rail .filterbar label > span {
+  background: transparent;
+  border-color: rgb(250 246 236 / 0.3);
+  color: var(--color-ivory);
+}
+.slot-rail .filterbar input:checked + span {
+  background: var(--color-goldsoft);
+  border-color: var(--color-goldsoft);
+  color: var(--color-em);
+}
+.slot-rail .filterbar button[type="submit"] {
+  background: var(--color-goldsoft);
+  color: var(--color-em);
+}
+.slot-rail .filterbar button[type="submit"]:hover {
+  background: var(--color-ivory);
+}
+.slot-rail .filterbar a {
+  border-color: var(--color-goldsoft);
+  color: var(--color-goldsoft);
+}
+.slot-rail .filterbar a:hover {
+  background: rgb(255 255 255 / 0.07);
+}
+.slot-rail .filterbar-count {
+  color: #b9cabb;
+}
+
+/* Bar mobile: baris gulir horizontal ringkas di atas kertas. */
+.slot-bar {
+  background: var(--color-paper);
+  border-bottom: 1px solid var(--color-line);
+}
+.slot-bar .filterbar {
+  flex-direction: row;
+  align-items: flex-end;
+  gap: 0.75rem;
+  overflow-x: auto;
+  padding: 0.75rem 1rem;
+}
+.slot-bar .filterbar > * {
+  flex: 0 0 auto;
+}
+.slot-bar .filterbar > div:first-of-type {
+  width: 220px;
+}
+.slot-bar .filterbar fieldset > div {
+  flex-wrap: nowrap;
+}
+.slot-bar .filterbar .grid {
+  grid-template-columns: 1fr 1fr;
+  min-width: 330px;
+}
+.slot-bar .filterbar-count {
+  padding: 0 1rem 0.75rem;
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;

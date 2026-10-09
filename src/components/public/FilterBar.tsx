@@ -2,9 +2,13 @@
 // seluruh state hidup di query string (searchParams), jadi tautan dapat
 // dibagikan & di-refresh dan halaman tetap berfungsi tanpa JavaScript.
 //
-// Gaya mengikuti arah Kalender Dinding (Task 14): formulir koran —
-// label kecil berhuruf kapital, isian bergaris bawah, pilihan rentang &
-// kategori sebagai label persegi tegas, tombol solid tinta.
+// Presentasi Serambi (plan redesign Task 3): markup form selalu satu
+// bentuk dengan kelas akar `filterbar`; perbedaannya antar-wadah
+// diatur CSS turunan penanda slot di globals.css — di rail desktop
+// (.slot-rail) filter bertumpuk satu kolom dengan teks terang di atas
+// zamrud, di bar mobile (.slot-bar) ia menjadi baris gulir horizontal
+// ringkas, dan di aliran konten (fallback tanpa JS) ia memakai gaya
+// dasar token Serambi di atas kertas.
 
 import { CATEGORIES, REGIONS } from "../../lib/constants.ts";
 import type { UpcomingRange } from "../../lib/feed.ts";
@@ -25,11 +29,11 @@ export const RANGE_OPTIONS: { value: UpcomingRange; label: string }[] = [
 ];
 
 const inputClass =
-  "w-full rounded-none border-0 border-b border-neutral-400 bg-transparent px-0 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-900 focus:outline-none";
+  "w-full rounded-[2px] border border-line bg-paper px-2.5 py-2 text-sm text-ink placeholder:text-muted/60 focus:border-em focus:outline-none";
 const labelClass =
-  "block text-[11px] font-bold uppercase tracking-[0.12em] text-neutral-500";
+  "block text-[11px] font-bold uppercase tracking-[0.12em] text-muted";
 const chipClass =
-  "inline-block border border-neutral-400 px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-neutral-600 peer-checked:border-neutral-900 peer-checked:bg-neutral-900 peer-checked:font-bold peer-checked:text-white";
+  "inline-block rounded-[2px] border border-line bg-ivory px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-muted peer-checked:border-em peer-checked:bg-em peer-checked:font-bold peer-checked:text-paper";
 
 export function FilterBar({
   action,
@@ -47,8 +51,8 @@ export function FilterBar({
 }) {
   const datalistId = `kecamatan-${action.replace(/\W/g, "") || "beranda"}`;
   return (
-    <div className="border-b border-[#e3e0d5] border-t-[3px] border-t-neutral-900 py-4">
-      <form method="get" action={action} className="flex flex-col gap-4">
+    <div>
+      <form method="get" action={action} className="filterbar flex flex-col gap-4">
         <div>
           <label htmlFor="filter-q" className={labelClass}>
             Cari acara
@@ -152,20 +156,20 @@ export function FilterBar({
         <div className="flex items-center gap-2">
           <button
             type="submit"
-            className="rounded-none bg-neutral-900 px-5 py-2 text-xs font-bold uppercase tracking-wider text-white hover:bg-neutral-700"
+            className="rounded-[2px] bg-em px-5 py-2 text-xs font-bold uppercase tracking-wider text-paper hover:bg-em2"
           >
             Terapkan
           </button>
           <a
             href={action}
-            className="rounded-none border border-neutral-900 px-5 py-2 text-xs font-bold uppercase tracking-wider text-neutral-900 hover:bg-neutral-100"
+            className="rounded-[2px] border border-em px-5 py-2 text-xs font-bold uppercase tracking-wider text-em hover:bg-ivory"
           >
             Atur Ulang
           </a>
         </div>
       </form>
       {resultCount !== undefined ? (
-        <p className="mt-3 text-sm text-neutral-600" role="status">
+        <p className="filterbar-count mt-3 text-sm text-muted" role="status">
           Menampilkan {resultCount} acara
         </p>
       ) : null}
