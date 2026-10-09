@@ -246,7 +246,7 @@ export default async function ArsipPage({
           </h2>
           <p className="mx-auto mt-2 max-w-prose text-sm text-muted">
             {hasFilter
-              ? "Belum ada event terbit yang sudah selesai dan cocok dengan pencarian atau filter di atas."
+              ? "Belum ada event terbit yang sudah selesai dan cocok dengan pencarian atau filter."
               : "Belum ada event terbit yang sudah selesai."}
           </p>
         </section>

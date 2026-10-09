@@ -353,7 +353,7 @@ export default async function JadwalPage({
           </h2>
           <p className="mx-auto mt-2 max-w-prose text-sm text-muted">
             {hasFilter
-              ? "Belum ada jadwal rutin terbit dan aktif yang cocok dengan filter di atas."
+              ? "Belum ada jadwal rutin terbit dan aktif yang cocok dengan filter."
               : "Belum ada jadwal rutin terbit dan aktif saat ini."}
           </p>
         </section>

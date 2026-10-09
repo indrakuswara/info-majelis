@@ -113,7 +113,7 @@ export default async function AcaraPage({
           </h2>
           <p className="mx-auto mt-2 max-w-prose text-sm text-muted">
             {hasFilter(values)
-              ? "Belum ada acara terbit yang cocok dengan filter atau kata pencarian di atas. Coba longgarkan filter, atau atur ulang untuk melihat semua acara."
+              ? "Belum ada acara terbit yang cocok dengan filter atau kata pencarian. Coba longgarkan filter, atau atur ulang untuk melihat semua acara."
               : "Belum ada acara terbit yang akan datang. Silakan kembali lagi nanti — jadwal baru ditambahkan secara berkala."}
           </p>
           {hasFilter(values) ? (
