@@ -103,8 +103,13 @@ export function Serambi({
 
       {/* Wadah slot konteks untuk mobile (diisi RailSlot lewat portal).
           Saat kosong wadah hilang total agar tidak menyisakan ruang/
-          garis hantu; kelas empty: gugur sendiri begitu portal terisi. */}
-      <div id="bar-slot" className="slot-bar empty:hidden lg:hidden" />
+          garis hantu; kelas empty: gugur sendiri begitu portal terisi.
+          min-w-0 + max-w-full WAJIB: wadah ini flex item dari akar
+          flex-col — tanpa pengekangan, lebar min-content form gulir
+          di dalamnya (anak flex 0 0 auto, grid min-width) merambat
+          naik lewat min-width:auto dan meregangkan seluruh halaman
+          (overflow horizontal mobile). */}
+      <div id="bar-slot" className="slot-bar min-w-0 max-w-full empty:hidden lg:hidden" />
 
       {/* Rail desktop (≥1024px): sticky setinggi layar, gulir internal. */}
       <aside className="relative hidden w-[300px] shrink-0 bg-em text-ivory lg:sticky lg:top-0 lg:flex lg:h-screen lg:flex-col lg:overflow-y-auto">
@@ -147,7 +152,7 @@ export function Serambi({
               Garis & jarak atas hanya berlaku saat terisi — empty:
               menyembunyikan wadah kosong, dan gugur begitu portal
               memasukkan isinya. */}
-          <div id="rail-slot" className="slot-rail mt-7 border-t border-ivory/15 pt-5 empty:hidden" />
+          <div id="rail-slot" className="slot-rail mt-7 min-w-0 border-t border-ivory/15 pt-5 empty:hidden" />
 
           <div className="mt-auto pt-8">
             <p className="border-t border-goldsoft/40 py-5 text-[12.5px] leading-relaxed text-[#dfe7da]">
