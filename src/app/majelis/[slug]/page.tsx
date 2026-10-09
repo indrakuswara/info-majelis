@@ -9,6 +9,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
 import { EventCard } from "../../../components/public/EventCard.tsx";
+import { RailSlot } from "../../../components/public/RailSlot.tsx";
+import { UpcomingMini } from "../../../components/public/UpcomingMini.tsx";
 import {
   ensureSchema,
   getPublishedMajelisBySlug,
@@ -80,7 +82,7 @@ function SocialLink({ label, href }: { label: string; href: string | null }) {
         href={href}
         target="_blank"
         rel="noreferrer"
-        className="font-medium text-emerald-800 underline underline-offset-4"
+        className="font-medium text-em underline underline-offset-4"
       >
         {label}
       </a>
@@ -89,9 +91,9 @@ function SocialLink({ label, href }: { label: string; href: string | null }) {
 }
 
 const SECTION_HEADING =
-  "border-b border-neutral-900 pb-1 text-sm font-extrabold uppercase tracking-[0.1em] text-neutral-950";
+  "border-b border-line pb-1.5 font-display text-lg font-semibold text-ink";
 const DT_CLASS =
-  "text-[11px] font-bold uppercase tracking-[0.12em] text-neutral-500";
+  "text-[11px] font-bold uppercase tracking-[0.12em] text-muted";
 
 export default async function MajelisProfilePage({
   params,
@@ -143,10 +145,17 @@ export default async function MajelisProfilePage({
     <div className="flex flex-col gap-6">
       <Link
         href="/majelis"
-        className="text-sm font-medium text-emerald-800 underline underline-offset-4"
+        className="text-sm font-medium text-em underline underline-offset-4"
       >
         ← Direktori majelis
       </Link>
+
+      {/* Daftar mini "Acara Terdekat" tinggal di rail desktop / bar
+          mobile lewat RailSlot; posisi di sini adalah fallback aliran
+          konten tanpa JS (plan redesign Task 6). */}
+      <RailSlot>
+        <UpcomingMini />
+      </RailSlot>
 
       <article>
         {headerImage ? (
@@ -154,29 +163,29 @@ export default async function MajelisProfilePage({
           <img
             src={headerImage}
             alt={`Foto atau logo ${majelis.name}`}
-            className="max-h-80 w-full rounded-[2px] object-cover"
+            className="max-h-80 w-full rounded-[2px] border border-line object-cover"
           />
         ) : null}
         <div className="flex flex-col gap-5 pt-5">
-          <div className="flex items-start gap-4 border-b-2 border-neutral-900 pb-4">
+          <div className="flex items-start gap-4 border-b border-line pb-4">
             {majelis.logoUrl && majelis.photoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={majelis.logoUrl}
                 alt=""
-                className="h-16 w-16 shrink-0 rounded-[2px] object-cover"
+                className="h-16 w-16 shrink-0 rounded-[2px] border border-line object-cover"
               />
             ) : null}
             <div>
-              <h1 className="text-3xl font-extrabold leading-tight tracking-tight text-neutral-950">
+              <h1 className="font-display text-3xl font-semibold leading-tight text-ink">
                 {majelis.name}
               </h1>
-              <p className="mt-1 text-neutral-600">
+              <p className="mt-1 text-muted">
                 {majelis.baseDistrict ? `${majelis.baseDistrict}, ` : ""}
                 {majelis.city}
               </p>
               {majelis.leader ? (
-                <p className="mt-1 text-sm text-neutral-600">
+                <p className="mt-1 text-sm text-muted">
                   Pimpinan: {majelis.leader}
                 </p>
               ) : null}
@@ -184,19 +193,19 @@ export default async function MajelisProfilePage({
           </div>
 
           {majelis.description ? (
-            <p className="whitespace-pre-line leading-relaxed text-neutral-700">
+            <p className="whitespace-pre-line leading-relaxed text-ink">
               {majelis.description}
             </p>
           ) : null}
 
           <dl className="grid gap-x-6 sm:grid-cols-2">
             {majelis.baseAddress ? (
-              <div className="border-t border-[#e3e0d5] py-3">
+              <div className="border-t border-line py-3">
                 <dt className={DT_CLASS}>Alamat Markas</dt>
-                <dd className="mt-1 text-neutral-900">
+                <dd className="mt-1 text-ink">
                   {majelis.baseAddress}
                   {majelis.baseDistrict || majelis.city ? (
-                    <span className="block text-sm text-neutral-600">
+                    <span className="block text-sm text-muted">
                       {majelis.baseDistrict ? `${majelis.baseDistrict}, ` : ""}
                       {majelis.city}
                     </span>
@@ -205,12 +214,12 @@ export default async function MajelisProfilePage({
               </div>
             ) : null}
             {majelis.contact ? (
-              <div className="border-t border-[#e3e0d5] py-3">
+              <div className="border-t border-line py-3">
                 <dt className={DT_CLASS}>Kontak</dt>
-                <dd className="mt-1 whitespace-pre-line text-neutral-900">
+                <dd className="mt-1 whitespace-pre-line text-ink">
                   {majelis.contact}
                 </dd>
-                <dd className="mt-1 text-xs text-neutral-500">
+                <dd className="mt-1 text-xs text-muted">
                   Kontak ini ditampilkan publik sesuai data majelis.
                 </dd>
               </div>
@@ -223,7 +232,7 @@ export default async function MajelisProfilePage({
                 href={majelis.baseMapsUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex rounded-none bg-neutral-900 px-5 py-3 text-sm font-bold text-white hover:bg-neutral-700"
+                className="inline-flex rounded-[2px] bg-em px-5 py-3 text-sm font-bold text-paper hover:bg-em2"
               >
                 Rute ke Markas
               </a>
@@ -245,27 +254,27 @@ export default async function MajelisProfilePage({
             </section>
           ) : null}
 
-          <p className="border-t-2 border-neutral-900 pt-4 text-sm text-neutral-500">
+          <p className="border-t border-line pt-4 text-sm text-muted">
             Terakhir diperbarui: {formatTanggal(majelis.updatedAt)}
           </p>
         </div>
       </article>
 
       <section>
-        <div className="flex items-baseline justify-between gap-2 border-b-2 border-neutral-900 pb-1.5">
-          <h2 className="text-sm font-extrabold uppercase tracking-[0.12em] text-neutral-950">
+        <div className="flex items-baseline justify-between gap-2 border-b border-line pb-1.5">
+          <h2 className="font-display text-lg font-semibold text-ink">
             Acara Akan Datang
           </h2>
-          <span className="text-sm text-neutral-500">
+          <span className="text-sm text-muted">
             {upcomingItems.length} acara
           </span>
         </div>
         {upcomingItems.length === 0 ? (
-          <p className="border border-dashed border-neutral-400 px-5 py-8 text-center text-sm text-neutral-600">
+          <p className="mt-4 border border-dashed border-line px-5 py-8 text-center text-sm text-muted">
             Belum ada acara mendatang dari majelis ini.
           </p>
         ) : (
-          <div className="divide-y divide-[#e3e0d5]">
+          <div className="mt-4 grid border-l border-t border-line lg:grid-cols-2">
             {upcomingItems.map((item) => (
               <EventCard key={item.key} item={item} todayIso={today} />
             ))}
@@ -274,18 +283,19 @@ export default async function MajelisProfilePage({
       </section>
 
       <section>
-        <h2 className="border-b-2 border-neutral-900 pb-1.5 text-sm font-extrabold uppercase tracking-[0.12em] text-neutral-950">
-          Jadwal Rutin Majelis Ini
-        </h2>
+        <h2 className={SECTION_HEADING}>Jadwal Rutin Majelis Ini</h2>
         {routinesWithNext.length === 0 ? (
-          <p className="border border-dashed border-neutral-400 px-5 py-8 text-center text-sm text-neutral-600">
+          <p className="mt-4 border border-dashed border-line px-5 py-8 text-center text-sm text-muted">
             Majelis ini belum memiliki jadwal rutin terbit yang aktif.
           </p>
         ) : (
-          <div className="divide-y divide-[#e3e0d5]">
+          <div className="mt-4 grid border-l border-t border-line">
             {routinesWithNext.map(({ routine, next }) => (
-              <article key={routine.id} className="py-4">
-                <h3 className="font-bold leading-snug text-neutral-950">
+              <article
+                key={routine.id}
+                className="border-b border-r border-line bg-paper p-5"
+              >
+                <h3 className="font-display text-lg font-semibold leading-snug text-ink">
                   <Link
                     href={`/acara/${routine.slug}`}
                     className="hover:underline"
@@ -293,22 +303,22 @@ export default async function MajelisProfilePage({
                     {routine.title}
                   </Link>
                 </h3>
-                <p className="mt-1 text-sm tabular-nums text-neutral-700">
+                <p className="mt-1 text-sm tabular-nums text-muted">
                   {describePattern(routine.pattern, {
                     startTime: routine.startTime,
                   })}{" "}
                   · {formatJamRange(routine.startTime, routine.endTime)}
                 </p>
                 {next ? (
-                  <p className="mt-1 text-sm text-neutral-600">
+                  <p className="mt-1 text-sm text-muted">
                     Berikutnya: {formatTanggal(next.date)}
                   </p>
                 ) : (
-                  <p className="mt-1 text-sm font-medium text-amber-800">
+                  <p className="mt-1 text-sm font-medium text-[#8a6410]">
                     Belum ada jadwal berikutnya yang terkonfirmasi
                   </p>
                 )}
-                <p className="mt-1 text-sm text-neutral-600">
+                <p className="mt-1 text-sm text-muted">
                   {routine.venueName} — {routine.district}, {routine.city}
                 </p>
               </article>

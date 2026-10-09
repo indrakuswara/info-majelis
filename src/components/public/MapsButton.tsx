@@ -9,7 +9,7 @@ export function MapsButton({ href }: { href: string }) {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-flex flex-1 items-center justify-center rounded-none bg-neutral-900 px-5 py-3 text-sm font-bold text-white hover:bg-neutral-700"
+      className="inline-flex flex-1 items-center justify-center rounded-[2px] bg-em px-5 py-3 text-sm font-bold text-paper hover:bg-em2"
     >
       Rute ke Lokasi
     </a>

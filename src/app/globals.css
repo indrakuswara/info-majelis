@@ -186,6 +186,45 @@
   flex-wrap: nowrap;
 }
 
+/* Konteks slot untuk daftar mini "Acara Terdekat" (plan redesign
+   Task 6): satu instance UpcomingMini (kelas akar .upcoming-mini)
+   mengikuti pola yang sama — gaya dasar markup untuk konteks terang,
+   perbedaan antar-wadah dari sini saja. */
+
+/* Rail desktop: teks terang di atas zamrud. */
+.slot-rail .upcoming-mini h2 {
+  color: var(--color-goldsoft);
+}
+.slot-rail .upcoming-mini li {
+  border-color: rgb(250 246 236 / 0.15);
+}
+.slot-rail .upcoming-mini a {
+  color: var(--color-ivory);
+}
+.slot-rail .upcoming-mini a:hover {
+  color: #ffffff;
+}
+.slot-rail .upcoming-mini-date {
+  color: #b9cabb;
+}
+
+/* Bar mobile: daftar menyamping yang bisa digulir, tanpa garis atas. */
+.slot-bar .upcoming-mini {
+  padding: 0.75rem 1rem;
+}
+.slot-bar .upcoming-mini ul {
+  flex-direction: row;
+  gap: 1.25rem;
+  overflow-x: auto;
+}
+.slot-bar .upcoming-mini li {
+  border-top: 0;
+  flex: 0 0 auto;
+  max-width: 240px;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;

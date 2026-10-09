@@ -7,10 +7,14 @@
 // sourceInfo, sehingga field internal admin tidak dapat bocor lewat
 // komponen ini.
 //
-// Gaya mengikuti arah Kalender Dinding (Task 14): kepala ala agenda
-// (kolom tanggal besar tabular + garis tinta), label kategori teks
-// kecil beraksen warna hemat, seksi-seksi dibatasi garis tipis, dan
-// tombol aksi tegas — Rute solid tinta, Bagikan outline.
+// Gaya Serambi (plan redesign Task 6): kepala dua kolom di desktop —
+// poster berbingkai garis `line` (atau blok tipografi gradasi zamrud
+// pengganti poster, pola featured EventCard) di kiri ±380px, info di
+// kanan — baris fakta bergaya tabel bersih berbatas `line`, seksi di
+// bawahnya dengan judul serif, dan dua tombol aksi tetap: Rute solid
+// zamrud, Bagikan outline zamrud. Penanda kategori titik + teks warna
+// dari CATEGORY_STYLES dipertahankan; aksen lain memakai palet
+// Serambi ("Hari ini" blok zamrud, "Edisi Spesial" emas pucat).
 
 import Link from "next/link";
 import { CATEGORY_STYLES, categoryLabel } from "../../lib/constants.ts";
@@ -96,9 +100,9 @@ export interface EventDetailData {
 }
 
 const SECTION_HEADING =
-  "border-b border-neutral-900 pb-1 text-sm font-extrabold uppercase tracking-[0.1em] text-neutral-950";
+  "border-b border-line pb-1.5 font-display text-lg font-semibold text-ink";
 const DT_CLASS =
-  "text-[11px] font-bold uppercase tracking-[0.12em] text-neutral-500";
+  "text-[11px] font-bold uppercase tracking-[0.12em] text-muted";
 
 function StatusLabel({
   tone,
@@ -109,13 +113,13 @@ function StatusLabel({
 }) {
   if (tone === "ongoing") {
     return (
-      <span className="bg-red-700 px-1.5 py-0.5 font-bold text-white">
+      <span className="rounded-[2px] bg-em px-1.5 py-0.5 font-bold text-paper">
         {children}
       </span>
     );
   }
   return (
-    <span className={tone === "finished" ? "text-neutral-500" : "text-neutral-900"}>
+    <span className={tone === "finished" ? "text-muted" : "text-ink"}>
       {children}
     </span>
   );
@@ -171,180 +175,177 @@ export function EventDetail({ data }: { data: EventDetailData }) {
           dangerouslySetInnerHTML={{ __html: jsonLd }}
         />
       ) : null}
-      {data.posterUrl ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={data.posterUrl}
-          alt={`Poster ${data.title}`}
-          className="max-h-[32rem] w-full rounded-[2px] object-cover"
-        />
-      ) : null}
 
-      <div className="flex flex-col gap-6 pt-5">
+      <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[380px_minmax(0,1fr)] lg:gap-9">
         {data.posterUrl ? (
-          <div className="border-b-2 border-neutral-900 pb-4">
-            <h1 className="text-3xl font-extrabold leading-tight tracking-tight text-neutral-950">
-              {data.title}
-            </h1>
-            {data.organizer ? (
-              <p className="mt-2 font-medium text-neutral-700">
-                {data.organizer.name}
-              </p>
-            ) : null}
-            <p className="mt-1 text-sm text-neutral-500">
-              {data.district}, {data.city}
-            </p>
-          </div>
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={data.posterUrl}
+            alt={`Poster ${data.title}`}
+            className="max-h-[32rem] w-full self-start rounded-[2px] border border-line object-cover lg:max-h-none"
+          />
         ) : (
-          <div className="flex gap-5 border-b-2 border-neutral-900 pb-4">
-            <div className="w-20 flex-none text-right">
-              <div className="text-6xl font-extrabold leading-none tabular-nums text-neutral-950">
-                {fallbackDay(data.fallbackDate)}
-              </div>
-              <div className="mt-1.5 text-xs font-semibold uppercase tracking-wide text-neutral-500">
-                {fallbackMonthYear(data.fallbackDate)}
-              </div>
+          <div className="flex min-h-64 flex-col justify-end self-start bg-gradient-to-br from-em2 to-em p-6 text-paper lg:min-h-[380px] lg:w-full">
+            <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-goldsoft">
+              {categoryLabel(data.category)}
             </div>
-            <div className="min-w-0 flex-1">
-              <div className="flex items-start justify-between gap-4">
-                <h1 className="text-3xl font-extrabold leading-tight tracking-tight text-neutral-950">
-                  {data.title}
-                </h1>
-                {data.organizer?.logoUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={data.organizer.logoUrl}
-                    alt=""
-                    className="h-12 w-12 flex-none rounded-[2px] object-cover"
-                  />
-                ) : null}
-              </div>
-              {data.organizer ? (
-                <p className="mt-2 font-medium text-neutral-700">
-                  {data.organizer.name}
-                </p>
-              ) : null}
-              <p className="mt-1 text-sm text-neutral-500">
-                {data.district}, {data.city}
-              </p>
+            <div className="mt-3 font-display text-6xl font-semibold leading-none tabular-nums">
+              {fallbackDay(data.fallbackDate)}
+            </div>
+            <div className="mt-1.5 text-xs font-semibold uppercase tracking-wide text-[#cfe0d2]">
+              {fallbackMonthYear(data.fallbackDate)}
+            </div>
+            <div className="mt-4 font-display text-2xl font-semibold leading-snug">
+              {data.title}
+            </div>
+            <div className="mt-2 text-[13px] leading-relaxed text-[#cfe0d2]">
+              {data.dateLabel} · {data.timeLabel}
+              <br />
+              {data.venueName} — {data.district}, {data.city}
             </div>
           </div>
         )}
 
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-bold uppercase tracking-[0.08em]">
-          <span className={`inline-flex items-center gap-1.5 ${styles.text}`}>
-            <span
-              aria-hidden="true"
-              className={`h-1.5 w-1.5 flex-none rounded-full ${styles.dot}`}
-            />
-            {categoryLabel(data.category)}
-          </span>
-          {data.patternLabel ? (
-            <span className="border border-neutral-400 px-1 py-px text-neutral-600">
-              Rutin
-            </span>
-          ) : null}
-          {data.exceptionKind === "edisi-spesial" ? (
-            <span className="text-amber-700">Edisi Spesial</span>
-          ) : null}
-          <StatusLabel tone={data.statusTone}>{data.statusLabel}</StatusLabel>
-          {data.relativeLabel ? (
-            data.relativeLabel === "Hari ini" ? (
-              <span className="bg-red-700 px-1.5 py-0.5 text-white">
-                {data.relativeLabel}
+        <div className="flex min-w-0 flex-col gap-6">
+          <div>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-bold uppercase tracking-[0.08em]">
+              <span className={`inline-flex items-center gap-1.5 ${styles.text}`}>
+                <span
+                  aria-hidden="true"
+                  className={`h-1.5 w-1.5 flex-none rounded-full ${styles.dot}`}
+                />
+                {categoryLabel(data.category)}
               </span>
-            ) : (
-              <span className="text-neutral-500">{data.relativeLabel}</span>
-            )
-          ) : null}
-        </div>
-
-        {data.exceptionKind === "edisi-spesial" ? (
-          <section className="border-l-4 border-amber-500 bg-amber-50 px-4 py-3 text-amber-950">
-            <h2 className="font-bold">Edisi Spesial</h2>
-            <p className="mt-1 text-sm">
-              {data.exceptionNote ??
-                "Kemunculan ini memakai keterangan khusus dari penyelenggara."}
-            </p>
-          </section>
-        ) : null}
-
-        <dl className="grid gap-x-6 sm:grid-cols-2">
-          <div className="border-t border-[#e3e0d5] py-3">
-            <dt className={DT_CLASS}>Tanggal</dt>
-            <dd className="mt-1 font-medium text-neutral-900">
-              {data.dateLabel}
-            </dd>
-          </div>
-          <div className="border-t border-[#e3e0d5] py-3">
-            <dt className={DT_CLASS}>Waktu</dt>
-            <dd className="mt-1 font-medium tabular-nums text-neutral-900">
-              {data.timeLabel}
-            </dd>
-          </div>
-          {data.patternLabel ? (
-            <div className="border-t border-[#e3e0d5] py-3">
-              <dt className={DT_CLASS}>Pola Jadwal</dt>
-              <dd className="mt-1 font-medium text-neutral-900">
-                {data.patternLabel}
-              </dd>
-            </div>
-          ) : null}
-          <div className="border-t border-[#e3e0d5] py-3">
-            <dt className={DT_CLASS}>Tempat</dt>
-            <dd className="mt-1 text-neutral-900">
-              <span className="font-medium">{data.venueName}</span>
-              <span className="mt-0.5 block text-sm text-neutral-600">
-                {data.address} — {data.district}, {data.city}
-              </span>
-            </dd>
-          </div>
-          {data.organizer ? (
-            <div className="border-t border-[#e3e0d5] py-3">
-              <dt className={DT_CLASS}>Penyelenggara</dt>
-              <dd className="mt-1 font-medium text-neutral-900">
-                {data.organizer.href ? (
-                  <Link
-                    href={data.organizer.href}
-                    className="text-emerald-800 underline underline-offset-4"
-                  >
-                    {data.organizer.name}
-                  </Link>
+              {data.patternLabel ? (
+                <span className="rounded-[2px] border border-line px-1 py-px text-muted">
+                  Rutin
+                </span>
+              ) : null}
+              {data.exceptionKind === "edisi-spesial" ? (
+                <span className="text-[#8a6410]">Edisi Spesial</span>
+              ) : null}
+              <StatusLabel tone={data.statusTone}>
+                {data.statusLabel}
+              </StatusLabel>
+              {data.relativeLabel ? (
+                data.relativeLabel === "Hari ini" ? (
+                  <span className="rounded-[2px] bg-em px-1.5 py-0.5 text-paper">
+                    {data.relativeLabel}
+                  </span>
                 ) : (
-                  data.organizer.name
-                )}
-              </dd>
+                  <span className="text-muted">{data.relativeLabel}</span>
+                )
+              ) : null}
             </div>
-          ) : null}
-          {data.speakers.length > 0 ? (
-            <div className="border-t border-[#e3e0d5] py-3">
-              <dt className={DT_CLASS}>Penceramah</dt>
-              <dd className="mt-1 font-medium text-neutral-900">
-                {data.speakers.join(", ")}
-              </dd>
-            </div>
-          ) : null}
-          {data.audienceLabel ? (
-            <div className="border-t border-[#e3e0d5] py-3">
-              <dt className={DT_CLASS}>Untuk Siapa</dt>
-              <dd className="mt-1 font-medium text-neutral-900">
-                {data.audienceLabel}
-              </dd>
-            </div>
-          ) : null}
-        </dl>
 
-        <div className="flex flex-col gap-2 sm:flex-row" aria-label="Aksi acara">
-          <MapsButton href={data.mapsUrl} />
-          <ShareButtons title={data.title} text={shareText} url={canonicalUrl} />
+            <h1 className="mt-3 font-display text-3xl font-semibold leading-[1.15] text-ink sm:text-4xl">
+              {data.title}
+            </h1>
+            {data.organizer ? (
+              <p className="mt-2.5 flex items-center gap-2.5 font-medium text-ink">
+                {data.organizer.logoUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={data.organizer.logoUrl}
+                    alt=""
+                    className="h-10 w-10 flex-none rounded-[2px] border border-line object-cover"
+                  />
+                ) : null}
+                {data.organizer.name}
+              </p>
+            ) : null}
+            <p className="mt-1.5 text-sm text-muted">
+              {data.district}, {data.city}
+            </p>
+          </div>
+
+          {data.exceptionKind === "edisi-spesial" ? (
+            <section className="border-l-2 border-gold bg-[#f7ecd2] px-4 py-3 text-ink">
+              <h2 className="font-display font-semibold">Edisi Spesial</h2>
+              <p className="mt-1 text-sm">
+                {data.exceptionNote ??
+                  "Kemunculan ini memakai keterangan khusus dari penyelenggara."}
+              </p>
+            </section>
+          ) : null}
+
+          <dl className="grid gap-x-6 sm:grid-cols-2">
+            <div className="border-t border-line py-3">
+              <dt className={DT_CLASS}>Tanggal</dt>
+              <dd className="mt-1 font-medium text-ink">{data.dateLabel}</dd>
+            </div>
+            <div className="border-t border-line py-3">
+              <dt className={DT_CLASS}>Waktu</dt>
+              <dd className="mt-1 font-medium tabular-nums text-ink">
+                {data.timeLabel}
+              </dd>
+            </div>
+            {data.patternLabel ? (
+              <div className="border-t border-line py-3">
+                <dt className={DT_CLASS}>Pola Jadwal</dt>
+                <dd className="mt-1 font-medium text-ink">
+                  {data.patternLabel}
+                </dd>
+              </div>
+            ) : null}
+            <div className="border-t border-line py-3">
+              <dt className={DT_CLASS}>Tempat</dt>
+              <dd className="mt-1 text-ink">
+                <span className="font-medium">{data.venueName}</span>
+                <span className="mt-0.5 block text-sm text-muted">
+                  {data.address} — {data.district}, {data.city}
+                </span>
+              </dd>
+            </div>
+            {data.organizer ? (
+              <div className="border-t border-line py-3">
+                <dt className={DT_CLASS}>Penyelenggara</dt>
+                <dd className="mt-1 font-medium text-ink">
+                  {data.organizer.href ? (
+                    <Link
+                      href={data.organizer.href}
+                      className="text-em underline underline-offset-4"
+                    >
+                      {data.organizer.name}
+                    </Link>
+                  ) : (
+                    data.organizer.name
+                  )}
+                </dd>
+              </div>
+            ) : null}
+            {data.speakers.length > 0 ? (
+              <div className="border-t border-line py-3">
+                <dt className={DT_CLASS}>Penceramah</dt>
+                <dd className="mt-1 font-medium text-ink">
+                  {data.speakers.join(", ")}
+                </dd>
+              </div>
+            ) : null}
+            {data.audienceLabel ? (
+              <div className="border-t border-line py-3">
+                <dt className={DT_CLASS}>Untuk Siapa</dt>
+                <dd className="mt-1 font-medium text-ink">
+                  {data.audienceLabel}
+                </dd>
+              </div>
+            ) : null}
+          </dl>
+
+          <div className="flex flex-col gap-2 sm:flex-row" aria-label="Aksi acara">
+            <MapsButton href={data.mapsUrl} />
+            <ShareButtons title={data.title} text={shareText} url={canonicalUrl} />
+          </div>
         </div>
+      </div>
 
+      <div className="mt-8 flex flex-col gap-6">
         {data.description ? (
           <section>
             <h2 className={SECTION_HEADING}>
               {data.descriptionLabel ?? "Deskripsi"}
             </h2>
-            <p className="mt-2 whitespace-pre-line leading-relaxed text-neutral-700">
+            <p className="mt-2 whitespace-pre-line leading-relaxed text-ink">
               {data.description}
             </p>
           </section>
@@ -353,23 +354,25 @@ export function EventDetail({ data }: { data: EventDetailData }) {
         {data.extraInfo ? (
           <section>
             <h2 className={SECTION_HEADING}>Info Tambahan</h2>
-            <p className="mt-2 whitespace-pre-line leading-relaxed text-neutral-700">
+            <p className="mt-2 whitespace-pre-line leading-relaxed text-ink">
               {data.extraInfo}
             </p>
           </section>
         ) : null}
 
         {data.specialNote ? (
-          <section className="border-l-4 border-neutral-900 bg-neutral-50 px-4 py-3">
-            <h2 className="font-bold text-neutral-950">Catatan Khusus</h2>
-            <p className="mt-1 whitespace-pre-line text-sm leading-relaxed text-neutral-700">
+          <section className="border-l-2 border-em bg-ivory px-4 py-3">
+            <h2 className="font-display font-semibold text-ink">
+              Catatan Khusus
+            </h2>
+            <p className="mt-1 whitespace-pre-line text-sm leading-relaxed text-muted">
               {data.specialNote}
             </p>
           </section>
         ) : null}
 
         {data.effectiveLabel ? (
-          <p className="text-sm text-neutral-600">{data.effectiveLabel}</p>
+          <p className="text-sm text-muted">{data.effectiveLabel}</p>
         ) : null}
 
         {data.liveStreamUrl || data.libraryUrl ? (
@@ -382,7 +385,7 @@ export function EventDetail({ data }: { data: EventDetailData }) {
                     href={data.liveStreamUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="font-medium text-emerald-800 underline underline-offset-4"
+                    className="font-medium text-em underline underline-offset-4"
                   >
                     Tonton live streaming
                   </a>
@@ -394,7 +397,7 @@ export function EventDetail({ data }: { data: EventDetailData }) {
                     href={data.libraryUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="font-medium text-emerald-800 underline underline-offset-4"
+                    className="font-medium text-em underline underline-offset-4"
                   >
                     Bacaan di Perpustakaan
                   </a>
@@ -405,12 +408,12 @@ export function EventDetail({ data }: { data: EventDetailData }) {
         ) : null}
 
         {data.contact ? (
-          <section className="border-l-4 border-emerald-700 bg-emerald-50 px-4 py-3">
-            <h2 className="font-bold text-emerald-950">Kontak Panitia</h2>
-            <p className="mt-1 whitespace-pre-line text-emerald-950">
-              {data.contact}
-            </p>
-            <p className="mt-1 text-xs text-emerald-900">
+          <section className="border-l-2 border-em bg-ivory px-4 py-3">
+            <h2 className="font-display font-semibold text-em">
+              Kontak Panitia
+            </h2>
+            <p className="mt-1 whitespace-pre-line text-ink">{data.contact}</p>
+            <p className="mt-1 text-xs text-muted">
               Kontak ini ditampilkan publik sesuai data yang diberikan
               panitia.
             </p>
@@ -420,7 +423,7 @@ export function EventDetail({ data }: { data: EventDetailData }) {
         {data.occurrences && data.occurrences.length > 0 ? (
           <section>
             <h2 className={SECTION_HEADING}>Kemunculan Berikutnya</h2>
-            <ol className="divide-y divide-[#e3e0d5]">
+            <ol className="divide-y divide-line">
               {data.occurrences.map((occurrence) => (
                 <li key={occurrence.date} className="py-3">
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
@@ -428,32 +431,32 @@ export function EventDetail({ data }: { data: EventDetailData }) {
                     occurrence.exceptionKind !== "libur" ? (
                       <Link
                         href={occurrence.href}
-                        className="font-bold text-neutral-900 underline underline-offset-4"
+                        className="font-semibold text-ink underline underline-offset-4 hover:text-em"
                       >
                         {formatTanggal(occurrence.date)}
                       </Link>
                     ) : (
-                      <span className="font-bold text-neutral-900">
+                      <span className="font-semibold text-ink">
                         {formatTanggal(occurrence.date)}
                       </span>
                     )}
                     {occurrence.exceptionKind === "libur" ? (
-                      <span className="bg-red-700 px-1.5 py-0.5 text-[11px] font-bold uppercase tracking-[0.08em] text-white">
+                      <span className="rounded-[2px] border border-line bg-ivory px-1.5 py-0.5 text-[11px] font-bold uppercase tracking-[0.08em] text-muted">
                         Libur
                       </span>
                     ) : null}
                     {occurrence.exceptionKind === "edisi-spesial" ? (
-                      <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-amber-700">
+                      <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-[#8a6410]">
                         Edisi Spesial
                       </span>
                     ) : null}
                     {occurrence.isOngoing ? (
-                      <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-red-700">
+                      <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-em">
                         Sedang Berlangsung
                       </span>
                     ) : null}
                   </div>
-                  <p className="mt-1 text-sm tabular-nums text-neutral-700">
+                  <p className="mt-1 text-sm tabular-nums text-muted">
                     {occurrence.startTime} WIB
                     {occurrence.endTime
                       ? ` – ${occurrence.endTime} WIB`
@@ -461,12 +464,10 @@ export function EventDetail({ data }: { data: EventDetailData }) {
                     · {occurrence.venueName} — {occurrence.address}
                   </p>
                   {occurrence.note ? (
-                    <p className="mt-1 text-sm text-neutral-600">
-                      {occurrence.note}
-                    </p>
+                    <p className="mt-1 text-sm text-muted">{occurrence.note}</p>
                   ) : null}
                   {occurrence.description ? (
-                    <p className="mt-2 whitespace-pre-line text-sm text-neutral-700">
+                    <p className="mt-2 whitespace-pre-line text-sm text-ink">
                       <span className="font-medium">
                         Deskripsi edisi spesial:
                       </span>{" "}
@@ -482,20 +483,18 @@ export function EventDetail({ data }: { data: EventDetailData }) {
         {data.upcomingExceptions && data.upcomingExceptions.length > 0 ? (
           <section>
             <h2 className={SECTION_HEADING}>Pengecualian Mendatang</h2>
-            <ul className="divide-y divide-[#e3e0d5]">
+            <ul className="divide-y divide-line">
               {data.upcomingExceptions.map((exception) => (
                 <li key={exception.date} className="py-3">
-                  <p className="font-bold text-neutral-900">
+                  <p className="font-semibold text-ink">
                     {formatTanggal(exception.date)} —{" "}
                     {exception.kind === "libur" ? "Libur" : "Edisi Spesial"}
                   </p>
                   {exception.note ? (
-                    <p className="mt-1 text-sm text-neutral-600">
-                      {exception.note}
-                    </p>
+                    <p className="mt-1 text-sm text-muted">{exception.note}</p>
                   ) : null}
                   {exception.description ? (
-                    <p className="mt-1 whitespace-pre-line text-sm text-neutral-700">
+                    <p className="mt-1 whitespace-pre-line text-sm text-ink">
                       {exception.description}
                     </p>
                   ) : null}
@@ -505,7 +504,7 @@ export function EventDetail({ data }: { data: EventDetailData }) {
           </section>
         ) : null}
 
-        <p className="border-t-2 border-neutral-900 pt-4 text-sm text-neutral-500">
+        <p className="border-t border-line pt-4 text-sm text-muted">
           Terakhir diperbarui: {formatTanggal(data.updatedAt)}
         </p>
       </div>

@@ -16,6 +16,8 @@ import {
   type EventDetailData,
   type EventDetailOrganizer,
 } from "../../../components/public/EventDetail.tsx";
+import { RailSlot } from "../../../components/public/RailSlot.tsx";
+import { UpcomingMini } from "../../../components/public/UpcomingMini.tsx";
 import {
   assertValidDateString,
   ensureSchema,
@@ -317,7 +319,7 @@ async function routineDetail(
     <div className="flex flex-col gap-4">
       <Link
         href="/jadwal"
-        className="text-sm font-medium text-emerald-800 underline underline-offset-4"
+        className="text-sm font-medium text-em underline underline-offset-4"
       >
         ← Semua jadwal rutin
       </Link>
@@ -448,7 +450,7 @@ async function occurrenceDetail(
     <div className="flex flex-col gap-4">
       <Link
         href={`/acara/${routine.slug}`}
-        className="text-sm font-medium text-emerald-800 underline underline-offset-4"
+        className="text-sm font-medium text-em underline underline-offset-4"
       >
         ← Detail jadwal rutin
       </Link>
@@ -601,6 +603,7 @@ export default async function AcaraDetailPage({
   const publishedMajelis = await listPublishedMajelis({});
   const majelisById = new Map(publishedMajelis.map((m) => [m.id, m]));
 
+  let content;
   if (tanggal !== undefined) {
     if (typeof tanggal !== "string" || tanggal === "") notFound();
     try {
@@ -610,28 +613,40 @@ export default async function AcaraDetailPage({
     }
     const routine = await getPublishedRoutineBySlug(slug);
     if (!routine) notFound();
-    return occurrenceDetail(
+    content = await occurrenceDetail(
       routine,
       resolveOrganizer(routine, majelisById),
       tanggal,
       nowISO,
     );
+  } else {
+    const event = await getPublishedEventBySlug(slug);
+    if (event) {
+      content = (
+        <EventDetail
+          data={eventData(event, resolveOrganizer(event, majelisById), nowISO)}
+        />
+      );
+    } else {
+      const routine = await getPublishedRoutineBySlug(slug);
+      if (!routine) notFound();
+      content = await routineDetail(
+        routine,
+        resolveOrganizer(routine, majelisById),
+        nowISO,
+      );
+    }
   }
 
-  const event = await getPublishedEventBySlug(slug);
-  if (event) {
-    return (
-      <EventDetail
-        data={eventData(event, resolveOrganizer(event, majelisById), nowISO)}
-      />
-    );
-  }
-
-  const routine = await getPublishedRoutineBySlug(slug);
-  if (!routine) notFound();
-  return routineDetail(
-    routine,
-    resolveOrganizer(routine, majelisById),
-    nowISO,
+  return (
+    <>
+      {/* Daftar mini "Acara Terdekat" tinggal di rail desktop / bar
+          mobile lewat RailSlot; posisi di sini adalah fallback aliran
+          konten tanpa JS (plan redesign Task 6). */}
+      <RailSlot>
+        <UpcomingMini />
+      </RailSlot>
+      {content}
+    </>
   );
 }
