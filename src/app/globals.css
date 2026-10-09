@@ -65,16 +65,6 @@
 .slot-rail .filterbar .grid {
   grid-template-columns: 1fr;
 }
-.slot-rail .filterbar label > span {
-  background: transparent;
-  border-color: rgb(250 246 236 / 0.3);
-  color: var(--color-ivory);
-}
-.slot-rail .filterbar input:checked + span {
-  background: var(--color-goldsoft);
-  border-color: var(--color-goldsoft);
-  color: var(--color-em);
-}
 .slot-rail .filterbar button[type="submit"] {
   background: var(--color-goldsoft);
   color: var(--color-em);
