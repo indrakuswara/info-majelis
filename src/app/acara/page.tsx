@@ -85,11 +85,11 @@ export default async function AcaraPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="border-b-2 border-neutral-900 pb-4">
-        <h1 className="text-2xl font-extrabold tracking-tight text-neutral-900">
+      <div className="border-b border-line pb-4">
+        <h1 className="font-display text-3xl font-semibold text-ink">
           Semua Acara Akan Datang
         </h1>
-        <p className="mt-1 text-sm text-neutral-600">
+        <p className="mt-1 text-sm text-muted">
           Event sekali jalan dan kemunculan jadwal rutin yang sudah terbit,
           terurut dari yang paling dekat.
         </p>
@@ -107,11 +107,11 @@ export default async function AcaraPage({
       </RailSlot>
 
       {feed.length === 0 ? (
-        <section className="border border-dashed border-neutral-400 px-5 py-10 text-center">
-          <h2 className="text-lg font-bold text-neutral-900">
+        <section className="border border-dashed border-line bg-ivory px-5 py-10 text-center">
+          <h2 className="font-display text-lg font-semibold text-ink">
             Tidak ada acara yang cocok
           </h2>
-          <p className="mx-auto mt-2 max-w-prose text-sm text-neutral-600">
+          <p className="mx-auto mt-2 max-w-prose text-sm text-muted">
             {hasFilter(values)
               ? "Belum ada acara terbit yang cocok dengan filter atau kata pencarian di atas. Coba longgarkan filter, atau atur ulang untuk melihat semua acara."
               : "Belum ada acara terbit yang akan datang. Silakan kembali lagi nanti — jadwal baru ditambahkan secara berkala."}
@@ -119,7 +119,7 @@ export default async function AcaraPage({
           {hasFilter(values) ? (
             <Link
               href="/acara"
-              className="mt-4 inline-block rounded-none bg-neutral-900 px-5 py-2 text-xs font-bold uppercase tracking-wider text-white hover:bg-neutral-700"
+              className="mt-4 inline-block rounded-[2px] bg-em px-5 py-2 text-xs font-bold uppercase tracking-wider text-paper hover:bg-em2"
             >
               Atur Ulang Filter
             </Link>
