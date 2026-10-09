@@ -67,11 +67,15 @@ export function FilterBar({
           />
         </div>
 
+        {/* Label chip WAJIB relative: input radio sr-only di dalamnya
+            position:absolute — tanpa labuh ke label, containing
+            block-nya lolos keluar form gulir dan posisi statisnya yang
+            jauh menyumbang overflow horizontal ke seluruh halaman. */}
         <fieldset>
           <legend className={labelClass}>Rentang tanggal</legend>
           <div className="mt-2 flex flex-wrap gap-1.5">
             {RANGE_OPTIONS.map((opt) => (
-              <label key={opt.value} className="cursor-pointer">
+              <label key={opt.value} className="relative cursor-pointer">
                 <input
                   type="radio"
                   name="range"
@@ -88,7 +92,7 @@ export function FilterBar({
         <fieldset>
           <legend className={labelClass}>Kategori</legend>
           <div className="mt-2 flex flex-wrap gap-1.5">
-            <label className="cursor-pointer">
+            <label className="relative cursor-pointer">
               <input
                 type="radio"
                 name="category"
@@ -99,7 +103,7 @@ export function FilterBar({
               <span className={chipClass}>Semua Kategori</span>
             </label>
             {CATEGORIES.map((c) => (
-              <label key={c.value} className="cursor-pointer">
+              <label key={c.value} className="relative cursor-pointer">
                 <input
                   type="radio"
                   name="category"
