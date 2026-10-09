@@ -27,6 +27,7 @@ import {
 } from "../../lib/seo.ts";
 import { buildShareText } from "../../lib/share.ts";
 import { MapsButton } from "./MapsButton.tsx";
+import { PosterLightbox } from "./PosterLightbox.tsx";
 import { ShareButtons } from "./ShareButtons.tsx";
 
 export interface EventDetailOrganizer {
@@ -178,11 +179,11 @@ export function EventDetail({ data }: { data: EventDetailData }) {
 
       <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[380px_minmax(0,1fr)] lg:gap-9">
         {data.posterUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <PosterLightbox
             src={data.posterUrl}
             alt={`Poster ${data.title}`}
-            className="max-h-[32rem] w-full self-start rounded-[2px] border border-line object-cover lg:max-h-none"
+            wrapperClassName="w-full self-start"
+            imgClassName="max-h-[32rem] w-full rounded-[2px] border border-line object-cover lg:max-h-none"
           />
         ) : (
           <div className="flex min-h-64 flex-col justify-end self-start bg-gradient-to-br from-em2 to-em p-6 text-paper lg:min-h-[380px] lg:w-full">

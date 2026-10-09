@@ -23,6 +23,7 @@ import {
   formatTanggal,
   relativeDayLabel,
 } from "../../lib/format.ts";
+import { PosterLightbox } from "./PosterLightbox.tsx";
 
 /** Nama bulan ringkas dari tanggal kalender, mis. "Okt". */
 function monthShort(isoDate: string): string {
@@ -152,12 +153,11 @@ export function EventCard({
     return (
       <article className="border border-line bg-ivory lg:grid lg:grid-cols-[320px_1fr]">
         {item.posterUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <PosterLightbox
             src={item.posterUrl}
             alt={`Poster ${item.title}`}
-            className="h-60 w-full object-cover lg:h-full lg:min-h-[300px]"
-            loading="lazy"
+            wrapperClassName="h-60 w-full lg:h-full lg:min-h-[300px]"
+            imgClassName="h-full w-full object-cover"
           />
         ) : (
           <div className="flex min-h-60 flex-col justify-end bg-gradient-to-br from-em2 to-em p-6 lg:min-h-[300px]">
@@ -226,12 +226,11 @@ export function EventCard({
         </div>
 
         {item.posterUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <PosterLightbox
             src={item.posterUrl}
             alt={`Poster ${item.title}`}
-            className="h-28 w-20 flex-none self-start rounded-[2px] border border-line object-cover sm:h-32 sm:w-24"
-            loading="lazy"
+            wrapperClassName="flex-none self-start"
+            imgClassName="h-28 w-20 rounded-[2px] border border-line object-cover sm:h-32 sm:w-24"
           />
         ) : null}
       </div>

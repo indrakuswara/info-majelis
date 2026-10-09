@@ -11,6 +11,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
+import { PosterLightbox } from "../../components/public/PosterLightbox.tsx";
 import { RailSlot } from "../../components/public/RailSlot.tsx";
 import {
   CATEGORIES,
@@ -110,12 +111,11 @@ function ArchiveCard({
       </div>
 
       {event.posterUrl ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
+        <PosterLightbox
           src={event.posterUrl}
           alt={`Poster ${event.title}`}
-          className="h-28 w-20 flex-none self-start rounded-[2px] border border-line object-cover sm:h-32 sm:w-24"
-          loading="lazy"
+          wrapperClassName="flex-none self-start"
+          imgClassName="h-28 w-20 rounded-[2px] border border-line object-cover sm:h-32 sm:w-24"
         />
       ) : null}
     </article>
