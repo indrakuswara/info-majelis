@@ -126,7 +126,7 @@ export default async function AcaraPage({
           ) : null}
         </section>
       ) : (
-        <div className="divide-y divide-[#e3e0d5] border-b border-[#e3e0d5]">
+        <div className="grid border-l border-t border-line lg:grid-cols-2">
           {feed.map((item) => (
             <EventCard key={item.key} item={item} todayIso={today} />
           ))}
