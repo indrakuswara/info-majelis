@@ -255,6 +255,14 @@
   padding-bottom: 0;
 }
 
+/* Fallback RailSlot sebelum portal siap: disembunyikan bila
+   JavaScript aktif agar panel tidak berkedip di aliran konten
+   (transisi terlihat "glitch"); <noscript> di dalam komponen
+   menimpanya menjadi block untuk pemakaian tanpa JS. */
+.railslot-pending {
+  display: none;
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
