@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Amiri, Fraunces, Geist, Geist_Mono, Public_Sans } from "next/font/google";
 import { Suspense } from "react";
 import { NameplateDate } from "../components/public/NameplateDate.tsx";
 import { SiteChrome } from "../components/public/SiteChrome.tsx";
@@ -14,6 +14,25 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+// Font Serambi (spec redesign §5.4): dimuat di samping Geist — Geist
+// tetap rujukan admin, tiga font ini hanya dirujuk shell publik lewat
+// token --font-display/--font-body/--font-arab di globals.css.
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
+  subsets: ["latin"],
+});
+
+const publicSans = Public_Sans({
+  variable: "--font-public-sans",
+  subsets: ["latin"],
+});
+
+const amiri = Amiri({
+  variable: "--font-amiri",
+  subsets: ["arabic"],
+  weight: ["400", "700"],
 });
 
 const siteUrl = getSiteUrl();
@@ -57,16 +76,15 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  // Tinta nameplate arah Kalender Dinding (Task 14) — selaras
-  // theme_color manifest.
-  themeColor: "#1a1a1a",
+  // Zamrud Serambi (spec redesign §5.4) — selaras theme_color manifest.
+  themeColor: "#0b3d2e",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="id"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} ${publicSans.variable} ${amiri.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col bg-neutral-50">
         <SiteChrome

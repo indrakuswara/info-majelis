@@ -10,6 +10,30 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Token desain Serambi (spec redesign §5.4) — hanya dirujuk kelas
+     shell & komponen publik; --font-sans di atas tetap Geist untuk
+     admin dan tidak diubah. */
+  --color-em: #0b3d2e;
+  --color-em2: #0e4d3a;
+  --color-paper: #fdfaf2;
+  --color-ivory: #faf6ec;
+  --color-gold: #b8912f;
+  --color-goldsoft: #d8b96a;
+  --color-line: #ddd3ba;
+  --color-ink: #1d2420;
+  --color-muted: #5d665f;
+  --font-display: var(--font-fraunces);
+  --font-body: var(--font-public-sans);
+  --font-arab: var(--font-amiri);
+}
+
+/* Fokus terlihat untuk elemen interaktif di dalam shell publik
+   Serambi (spec redesign §10): garis emas 2px. Dibatasi kelas shell
+   `.serambi-shell` agar area admin tidak ikut berubah. */
+.serambi-shell :focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
 }
 
 @media (prefers-color-scheme: dark) {
