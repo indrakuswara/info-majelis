@@ -178,20 +178,20 @@ export default async function MajelisDirectoryPage({
             </select>
           </div>
         </div>
-        <div className="pageform-actions flex flex-wrap items-center gap-2">
+        <div className="pageform-actions flex flex-wrap items-stretch gap-2">
           <button
             type="submit"
-            className="rounded-[2px] bg-em px-5 py-2 text-xs font-bold uppercase tracking-wider text-paper hover:bg-em2"
+            className="flex-1 whitespace-nowrap rounded-[2px] bg-em px-5 py-2 text-center text-xs font-bold uppercase tracking-wider text-paper hover:bg-em2"
           >
             Terapkan
           </button>
           <Link
             href="/majelis"
-            className="rounded-[2px] border border-em px-5 py-2 text-xs font-bold uppercase tracking-wider text-em hover:bg-ivory"
+            className="flex flex-1 items-center justify-center whitespace-nowrap rounded-[2px] border border-em px-5 py-2 text-center text-xs font-bold uppercase tracking-wider text-em hover:bg-ivory"
           >
-            Atur Ulang
+            Reset
           </Link>
-          <span className="pageform-count text-sm text-muted" role="status">
+          <span className="pageform-count self-center text-sm text-muted" role="status">
             Menampilkan {majelisList.length} majelis
           </span>
         </div>
