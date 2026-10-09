@@ -15,10 +15,7 @@ import { RailSlot } from "../../components/public/RailSlot.tsx";
 import { CATEGORIES, REGIONS } from "../../lib/constants.ts";
 import { ensureSchema } from "../../lib/db.ts";
 import type { Category } from "../../lib/domain.ts";
-import {
-  getDistrictSuggestions,
-  getUpcomingFeed,
-} from "../../lib/feed.ts";
+import { getUpcomingFeed } from "../../lib/feed.ts";
 import { wibTodayISODate } from "../../lib/format.ts";
 import { nowWibISO } from "../../lib/utils.ts";
 
@@ -27,7 +24,7 @@ export const instant = false;
 export const metadata: Metadata = {
   title: "Daftar Acara",
   description:
-    "Semua acara majelis yang akan datang — maulid, tabligh akbar, kajian, dan lainnya — dengan filter kota, kecamatan, dan kategori.",
+    "Semua acara majelis yang akan datang — maulid, tabligh akbar, kajian, dan lainnya — dengan filter kota dan kategori.",
 };
 
 interface AcaraSearchParams {
@@ -35,7 +32,6 @@ interface AcaraSearchParams {
   to?: string;
   category?: string;
   city?: string;
-  district?: string;
   q?: string;
 }
 
@@ -66,14 +62,13 @@ function parseFilters(params: AcaraSearchParams): FilterValues {
     to,
     category,
     city,
-    district: (params.district ?? "").trim(),
     q: (params.q ?? "").trim(),
   };
 }
 
 const hasFilter = (v: FilterValues): boolean =>
   v.from !== "" || v.to !== "" || v.category !== "" || v.city !== "" ||
-  v.district !== "" || v.q !== "";
+  v.q !== "";
 
 export default async function AcaraPage({
   searchParams,
@@ -86,17 +81,13 @@ export default async function AcaraPage({
 
   const nowISO = nowWibISO();
   const today = wibTodayISODate();
-  const [feed, districts] = await Promise.all([
-    getUpcomingFeed(nowISO, {
-      from: values.from === "" ? undefined : values.from,
-      to: values.to === "" ? undefined : values.to,
-      city: values.city === "" ? undefined : values.city,
-      district: values.district === "" ? undefined : values.district,
-      category: values.category === "" ? undefined : (values.category as Category),
-      q: values.q === "" ? undefined : values.q,
-    }),
-    getDistrictSuggestions(values.city === "" ? undefined : values.city),
-  ]);
+  const feed = await getUpcomingFeed(nowISO, {
+    from: values.from === "" ? undefined : values.from,
+    to: values.to === "" ? undefined : values.to,
+    city: values.city === "" ? undefined : values.city,
+    category: values.category === "" ? undefined : (values.category as Category),
+    q: values.q === "" ? undefined : values.q,
+  });
 
   return (
     <div className="flex flex-col gap-6">
@@ -113,12 +104,7 @@ export default async function AcaraPage({
       {/* Filter tinggal di rail desktop / bar mobile lewat RailSlot;
           posisi di sini adalah fallback aliran konten tanpa JS. */}
       <RailSlot>
-        <FilterBar
-          action="/acara"
-          values={values}
-          districts={districts}
-          resultCount={feed.length}
-        />
+        <FilterBar action="/acara" values={values} resultCount={feed.length} />
       </RailSlot>
 
       {feed.length === 0 ? (

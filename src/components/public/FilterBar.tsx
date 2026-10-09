@@ -18,7 +18,6 @@ export interface FilterValues {
   to: string;
   category: string;
   city: string;
-  district: string;
   q: string;
 }
 
@@ -32,18 +31,14 @@ const chipClass =
 export function FilterBar({
   action,
   values,
-  districts,
   resultCount,
 }: {
   /** Path tujuan form, mis. "/acara" (atau "/" dari beranda). */
   action: string;
   values: FilterValues;
-  /** Saran kecamatan untuk datalist (dari data terbit saja, via getDistrictSuggestions server). */
-  districts: string[];
   /** Bila diberikan, jumlah hasil ditampilkan di bawah form. */
   resultCount?: number;
 }) {
-  const datalistId = `kecamatan-${action.replace(/\W/g, "") || "beranda"}`;
   return (
     <div>
       <form method="get" action={action} className="filterbar flex flex-col gap-4">
@@ -123,44 +118,23 @@ export function FilterBar({
           </div>
         </fieldset>
 
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div>
-            <label htmlFor="filter-city" className={labelClass}>
-              Kota/Kabupaten
-            </label>
-            <select
-              id="filter-city"
-              name="city"
-              defaultValue={values.city}
-              className={inputClass}
-            >
-              <option value="">Semua kota/kabupaten</option>
-              {REGIONS.map((region) => (
-                <option key={region} value={region}>
-                  {region}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label htmlFor="filter-district" className={labelClass}>
-              Kecamatan
-            </label>
-            <input
-              id="filter-district"
-              type="text"
-              name="district"
-              defaultValue={values.district}
-              list={datalistId}
-              placeholder="Ketik atau pilih kecamatan"
-              className={inputClass}
-            />
-            <datalist id={datalistId}>
-              {districts.map((d) => (
-                <option key={d} value={d} />
-              ))}
-            </datalist>
-          </div>
+        <div>
+          <label htmlFor="filter-city" className={labelClass}>
+            Kota/Kabupaten
+          </label>
+          <select
+            id="filter-city"
+            name="city"
+            defaultValue={values.city}
+            className={inputClass}
+          >
+            <option value="">Semua kota/kabupaten</option>
+            {REGIONS.map((region) => (
+              <option key={region} value={region}>
+                {region}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="flex items-stretch gap-2">

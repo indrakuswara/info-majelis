@@ -10,7 +10,7 @@ import { FilterBar } from "../components/public/FilterBar.tsx";
 import { RailSlot } from "../components/public/RailSlot.tsx";
 import { SITE_COVERAGE_NOTE } from "../lib/constants.ts";
 import { ensureSchema } from "../lib/db.ts";
-import { getDistrictSuggestions, getUpcomingFeed, type FeedItem } from "../lib/feed.ts";
+import { getUpcomingFeed, type FeedItem } from "../lib/feed.ts";
 import { addDaysISODate, wibTodayISODate } from "../lib/format.ts";
 import { nowWibISO } from "../lib/utils.ts";
 
@@ -40,10 +40,10 @@ export default async function HomePage() {
 
   const nowISO = nowWibISO();
   const today = wibTodayISODate();
-  const [feed, districts] = await Promise.all([
-    getUpcomingFeed(nowISO, { horizonDays: 60, capEvents: true }),
-    getDistrictSuggestions(),
-  ]);
+  const feed = await getUpcomingFeed(nowISO, {
+    horizonDays: 60,
+    capEvents: true,
+  });
 
   const grouped = new Map<GroupKey, FeedItem[]>();
   for (const item of feed) {
@@ -78,8 +78,7 @@ export default async function HomePage() {
       <RailSlot>
         <FilterBar
           action="/acara"
-          values={{ from: "", to: "", category: "", city: "", district: "", q: "" }}
-          districts={districts}
+          values={{ from: "", to: "", category: "", city: "", q: "" }}
         />
       </RailSlot>
 
