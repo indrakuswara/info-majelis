@@ -1,7 +1,7 @@
 // Tanggal hari ini pada nameplate header publik (Task 14 fix).
 // Komponen SERVER: tanggal adalah konten, jadi harus sudah ada di HTML
 // hasil render server — bukan diisi klien sesudah hidrasi. Dirender dari
-// layout root dan diteruskan ke SiteChrome (komponen klien) sebagai prop
+// layout root dan diteruskan ke Serambi (komponen klien) sebagai prop
 // ReactNode; pola komposisi yang sah di Next: server component boleh
 // dirender sebagai children/prop dari client component.
 //
@@ -19,5 +19,7 @@ import { formatTanggal, wibTodayISODate } from "../../lib/format.ts";
 export async function NameplateDate() {
   await connection();
   const label = formatTanggal(wibTodayISODate());
-  return <span className="text-xs text-neutral-500">{label}</span>;
+  // Gaya Serambi: tanggal tampil di atas zamrud (rail desktop & header
+  // mobile), jadi ivory terang agar kontrasnya lolos.
+  return <span className="text-[13px] tracking-[0.02em] text-ivory/80">{label}</span>;
 }

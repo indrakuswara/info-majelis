@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Amiri, Fraunces, Geist, Geist_Mono, Public_Sans } from "next/font/google";
 import { Suspense } from "react";
 import { NameplateDate } from "../components/public/NameplateDate.tsx";
-import { SiteChrome } from "../components/public/SiteChrome.tsx";
+import { Serambi } from "../components/public/Serambi.tsx";
 import { getSiteUrl } from "../lib/seo.ts";
 import "./globals.css";
 
@@ -87,7 +87,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} ${publicSans.variable} ${amiri.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col bg-neutral-50">
-        <SiteChrome
+        <Serambi
           nameplateDate={
             // Tanggal nameplate dirender server (NameplateDate) dan
             // dibungkus Suspense: halaman statis (/offline, 404) tetap
@@ -98,7 +98,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           }
         >
           {children}
-        </SiteChrome>
+        </Serambi>
       </body>
     </html>
   );
