@@ -1,13 +1,18 @@
-// Bilah filter publik (plan Task 11; spec §9.1): form GET murni —
-// seluruh state hidup di query string (searchParams), jadi tautan dapat
-// dibagikan & di-refresh dan halaman tetap berfungsi tanpa JavaScript.
+// Panel cari + filter publik (plan Task 11; spec §9.1): DUA form GET
+// murni yang berdiri sendiri — pencarian (`searchbar`) terpisah dari
+// filter (`filterbar`), meniru pola Perpustakaan (search mandiri).
+// Seluruh state hidup di query string (searchParams), jadi tautan
+// dapat dibagikan & di-refresh dan halaman tetap berfungsi tanpa
+// JavaScript. Kedua form saling menjaga state pihak lain lewat input
+// hidden: form cari membawa filter aktif, form filter membawa kata
+// kunci — jadi keduanya tetap dapat digabung dari URL yang sama.
 //
-// Presentasi Serambi (plan redesign Task 3): markup form selalu satu
-// bentuk dengan kelas akar `filterbar`; perbedaannya antar-wadah
-// diatur CSS turunan penanda slot di globals.css — di rail desktop
-// (.slot-rail) filter bertumpuk satu kolom dengan teks terang di atas
-// zamrud, di bar mobile (.slot-bar) ia menjadi baris gulir horizontal
-// ringkas, dan di aliran konten (fallback tanpa JS) ia memakai gaya
+// Presentasi Serambi (plan redesign Task 3): markup selalu satu
+// bentuk; perbedaannya antar-wadah diatur CSS turunan penanda slot
+// di globals.css — di rail desktop (.slot-rail) panel bertumpuk satu
+// kolom dengan teks terang di atas zamrud, di bar mobile (.slot-bar)
+// pencarian tampil selebar bar di atas strip filter gulir horizontal,
+// dan di aliran konten (fallback tanpa JS) keduanya memakai gaya
 // dasar token Serambi di atas kertas.
 
 import { CATEGORIES, REGIONS } from "../../lib/constants.ts";
@@ -39,22 +44,48 @@ export function FilterBar({
   /** Bila diberikan, jumlah hasil ditampilkan di bawah form. */
   resultCount?: number;
 }) {
+  // Filter aktif yang dibawa form cari lewat input hidden, agar
+  // mencari tidak membuang filter yang sudah diterapkan.
+  const activeFilters: { name: string; value: string }[] = [
+    { name: "from", value: values.from },
+    { name: "to", value: values.to },
+    { name: "category", value: values.category },
+    { name: "city", value: values.city },
+  ].filter((f) => f.value !== "");
+
   return (
-    <div>
-      <form method="get" action={action} className="filterbar flex flex-col gap-4">
-        <div>
-          <label htmlFor="filter-q" className={labelClass}>
-            Cari acara
-          </label>
+    <div className="flex min-w-0 flex-col gap-4">
+      <form method="get" action={action} className="searchbar">
+        {activeFilters.map((f) => (
+          <input key={f.name} type="hidden" name={f.name} value={f.value} />
+        ))}
+        <label htmlFor="filter-q" className={labelClass}>
+          Cari acara
+        </label>
+        <div className="mt-2 flex items-stretch gap-2">
           <input
             id="filter-q"
             type="search"
             name="q"
             defaultValue={values.q}
             placeholder="Judul, penceramah, penyelenggara, tempat…"
-            className={inputClass}
+            className={`${inputClass} min-w-0 flex-1`}
           />
+          <button
+            type="submit"
+            className="whitespace-nowrap rounded-[2px] bg-em px-5 py-2 text-xs font-bold uppercase tracking-wider text-paper hover:bg-em2"
+          >
+            Cari
+          </button>
         </div>
+      </form>
+
+      <div aria-hidden="true" className="filterbar-divider border-t border-line" />
+
+      <form method="get" action={action} className="filterbar flex flex-col gap-4">
+        {values.q !== "" ? (
+          <input type="hidden" name="q" value={values.q} />
+        ) : null}
 
         <fieldset>
           <legend className={labelClass}>Rentang tanggal</legend>
@@ -153,7 +184,7 @@ export function FilterBar({
         </div>
       </form>
       {resultCount !== undefined ? (
-        <p className="filterbar-count mt-3 text-sm text-muted" role="status">
+        <p className="filterbar-count text-sm text-muted" role="status">
           Menampilkan {resultCount} acara
         </p>
       ) : null}

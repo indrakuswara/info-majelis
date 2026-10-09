@@ -36,11 +36,12 @@
   outline-offset: 2px;
 }
 
-/* Konteks slot Serambi (plan redesign Task 3): SATU instance FilterBar
-   yang sama (kelas akar .filterbar) tampil menurut wadahnya, dan
-   perbedaan layout diatur seluruhnya dari sini — markup form tidak
-   berubah antar-wadah. Selektor turunan .slot-rail/.slot-bar sengaja
-   lebih spesifik daripada utilitas Tailwind pada elemen form. */
+/* Konteks slot Serambi (plan redesign Task 3): SATU instance panel
+   FilterBar yang sama (form .searchbar + .filterbar) tampil menurut
+   wadahnya, dan perbedaan layout diatur seluruhnya dari sini —
+   markup form tidak berubah antar-wadah. Selektor turunan
+   .slot-rail/.slot-bar sengaja lebih spesifik daripada utilitas
+   Tailwind pada elemen form. */
 
 /* Rail desktop: bertumpuk satu kolom, teks terang di atas zamrud,
    bidang tembus terang dengan tepi ivory tipis. */
@@ -119,6 +120,35 @@
 }
 .slot-bar .filterbar-count {
   padding: 0 1rem 0.75rem;
+}
+
+/* Form pencarian mandiri (.searchbar): blok terpisah dari filter,
+   dipisahkan garis .filterbar-divider. Di rail mengikuti bahasa
+   bidang terang di atas zamrud seperti .filterbar; di bar mobile ia
+   selebar bar (tidak ikut gulir horizontal strip filter). */
+.slot-rail .searchbar label {
+  color: var(--color-goldsoft);
+}
+.slot-rail .searchbar input {
+  background: rgb(255 255 255 / 0.05);
+  border-color: rgb(250 246 236 / 0.3);
+  color: var(--color-ivory);
+}
+.slot-rail .searchbar input::placeholder {
+  color: rgb(250 246 236 / 0.45);
+}
+.slot-rail .searchbar button[type="submit"] {
+  background: var(--color-goldsoft);
+  color: var(--color-em);
+}
+.slot-rail .searchbar button[type="submit"]:hover {
+  background: var(--color-ivory);
+}
+.slot-rail .filterbar-divider {
+  border-color: rgb(250 246 236 / 0.18);
+}
+.slot-bar .searchbar {
+  padding: 0.75rem 1rem 0;
 }
 
 /* Konteks slot untuk form GET lokal halaman daftar (plan redesign
