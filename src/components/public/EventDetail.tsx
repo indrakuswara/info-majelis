@@ -183,7 +183,7 @@ export function EventDetail({ data }: { data: EventDetailData }) {
             src={data.posterUrl}
             alt={`Poster ${data.title}`}
             wrapperClassName="w-full self-start"
-            imgClassName="max-h-[32rem] w-full rounded-[2px] border border-line object-cover lg:max-h-none"
+            imgClassName="max-h-[32rem] w-full rounded-[2px] border border-line object-contain lg:max-h-none"
           />
         ) : (
           <div className="flex min-h-64 flex-col justify-end self-start bg-gradient-to-br from-em2 to-em p-6 text-paper lg:min-h-[380px] lg:w-full">

@@ -156,8 +156,8 @@ export function EventCard({
           <PosterLightbox
             src={item.posterUrl}
             alt={`Poster ${item.title}`}
-            wrapperClassName="h-60 w-full lg:h-full lg:min-h-[300px]"
-            imgClassName="h-full w-full object-cover"
+            wrapperClassName="h-[380px] w-full bg-gradient-to-br from-em2 to-em sm:h-[440px] lg:h-full lg:min-h-[300px]"
+            imgClassName="h-full w-full object-contain"
           />
         ) : (
           <div className="flex min-h-60 flex-col justify-end bg-gradient-to-br from-em2 to-em p-6 lg:min-h-[300px]">
