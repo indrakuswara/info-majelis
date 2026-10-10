@@ -53,6 +53,10 @@ export interface FeedItem {
   posterUrl: string | null;
   organizerName: string | null;
   organizerLogoUrl: string | null;
+  /** Nama penceramah/pengisi acara (boleh kosong). */
+  speakers: string[];
+  /** Deskripsi acara; null bila tidak diisi. */
+  description: string | null;
   /** Penanda "Rutin" + pola singkat, mis. "Setiap Kamis" (khusus rutin). */
   patternLabel: string | null;
   /** Kemunculan terkena pengecualian edisi spesial (memakai override). */
@@ -175,6 +179,8 @@ export function eventToFeedItem(
     posterUrl: e.posterUrl,
     organizerName: organizer.name,
     organizerLogoUrl: organizer.logoUrl,
+    speakers: e.speakers,
+    description: e.description,
     patternLabel: null,
     isSpecialEdition: false,
     specialNote: null,
@@ -206,6 +212,8 @@ export function occurrenceToFeedItem(
     posterUrl: r.posterUrl,
     organizerName: organizer.name,
     organizerLogoUrl: organizer.logoUrl,
+    speakers: r.speakers,
+    description: r.description,
     patternLabel: describePattern(r.pattern, { startTime: r.startTime }),
     isSpecialEdition: isSpecial,
     specialNote: isSpecial ? (o.note ?? r.specialNote) : null,

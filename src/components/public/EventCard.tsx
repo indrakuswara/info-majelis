@@ -189,6 +189,25 @@ export function EventCard({
             </Link>
           </h3>
           <MetaLines item={item} />
+
+          {item.address ? (
+            <p className="mt-1 text-[13px] leading-relaxed text-muted">
+              {item.address}
+            </p>
+          ) : null}
+          {item.speakers.length > 0 ? (
+            <p className="mt-3 text-sm text-muted">
+              Penceramah:{" "}
+              <span className="font-semibold text-ink">
+                {item.speakers.join(", ")}
+              </span>
+            </p>
+          ) : null}
+          {item.description ? (
+            <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-muted">
+              {item.description}
+            </p>
+          ) : null}
         </div>
       </article>
     );
